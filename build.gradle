@@ -9,17 +9,8 @@ buildscript {
 
 }
 
-plugins {
-    id "org.sonarqube" version "5.0.0.4638"
-}
-apply plugin: 'com.android.application'
 
-sonar {
-    properties {
-        property "sonar.projectKey", "SOEN6431"
-        property "sonar.projectName", "SOEN6431"
-    }
-}
+apply plugin: 'com.android.application'
 
 allprojects {
     repositories {
