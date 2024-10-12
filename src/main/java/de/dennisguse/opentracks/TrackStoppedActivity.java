@@ -72,15 +72,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         viewBinding.time.setText(StringUtils.formatElapsedTime(track.getTrackStatistics().getMovingTime()));
 
         updateDisplaySpeed();
-
-        {
-            Pair<String, String> parts = DistanceFormatter.Builder()
-                    .setUnit(PreferencesUtils.getUnitSystem())
-                    .build(this)
-                    .getDistanceParts(track.getTrackStatistics().getTotalDistance());
-            viewBinding.distance.setText(parts.first);
-            viewBinding.distanceUnit.setText(parts.second);
-        }
+        updateDistanceDisplay(track);
 
         viewBinding.finishButton.setOnClickListener(v -> {
             storeTrackMetaData(contentProviderUtils, track);
@@ -94,6 +86,14 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         });
 
         viewBinding.discardButton.setOnClickListener(v -> ConfirmDeleteDialogFragment.showDialog(getSupportFragmentManager(), trackId));
+    }
+    private void updateDistanceDisplay(Track track) {  // New method
+        Pair<String, String> parts = DistanceFormatter.Builder()
+                .setUnit(PreferencesUtils.getUnitSystem())
+                .build(this)
+                .getDistanceParts(track.getTrackStatistics().getTotalDistance());
+        viewBinding.distance.setText(parts.first);
+        viewBinding.distanceUnit.setText(parts.second);
     }
 
     private void updateDisplaySpeed(Track track)
