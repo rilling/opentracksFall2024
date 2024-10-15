@@ -32,7 +32,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
 
     private Track.Id trackId;
 
-    private boolean isDiscarding = false;
+    private boolean isDiscarding = false; // this is an issue i found - Karthikeyan
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

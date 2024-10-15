@@ -128,7 +128,16 @@ android {
         }
     }
 }
-
+sonarqube {
+    properties {
+        property "sonar.projectKey", "opentracksFall2024"
+        property "sonar.projectName", "opentracksFall2024"
+        property "sonar.projectVersion", "1.0"
+        property "sonar.sources", "src/main/java"
+        property "sonar.host.url", "http://localhost:9000/"
+        property "sonar.login", "sqp_e04775b127cd2a3850f4d91c0496ed59a3e8d5d9" // Optional
+    }
+}
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.2'
 
