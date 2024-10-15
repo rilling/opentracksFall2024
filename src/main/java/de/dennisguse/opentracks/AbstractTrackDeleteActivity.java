@@ -17,6 +17,8 @@
 package de.dennisguse.opentracks;
 
 import android.os.Handler;
+import android.os.Looper;
+
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -54,7 +56,7 @@ public abstract class AbstractTrackDeleteActivity extends AbstractActivity imple
             Toast.makeText(this, getString(R.string.track_delete_not_recording), Toast.LENGTH_LONG).show();
         }
 
-        TrackDeleteService.enqueue(this, new TrackDeleteService.TrackDeleteResultReceiver(new Handler(), this), trackIdList);
+        TrackDeleteService.enqueue(this, new TrackDeleteService.TrackDeleteResultReceiver(new Handler(Looper.getMainLooper()), this), trackIdList);
     }
 
     protected abstract void onDeleteConfirmed();
