@@ -101,7 +101,6 @@ public class TrackRecordedActivity extends AbstractTrackDeleteActivity implement
 
         trackRecordingServiceConnection = new TrackRecordingServiceConnection(bindCallback);
 
-       
         viewBinding.bottomAppBarLayout.bottomAppBar.replaceMenu(R.menu.track_detail);
         setSupportActionBar(viewBinding.bottomAppBarLayout.bottomAppBar);
 
