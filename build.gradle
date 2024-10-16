@@ -1,3 +1,12 @@
+apply plugin: 'com.android.application'
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 buildscript {
     repositories {
         google()
@@ -7,20 +16,6 @@ buildscript {
         classpath 'com.android.tools.build:gradle:8.6.1'
     }
 
-}
-
-plugins {
-    id "org.sonarqube" version "5.1.0.4882"
-}
-
-
-apply plugin: 'com.android.application'
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
 }
 
 def getVersionName = { ->
@@ -81,6 +76,7 @@ android {
         testInstrumentationRunner "de.dennisguse.opentracks.TestRunner"
         testInstrumentationRunnerArguments clearPackageData: 'true'
     }
+
     signingConfigs {
         nightly {
             if (System.getProperty("nightly_store_file") != null) {
@@ -154,3 +150,4 @@ dependencies {
     androidTestUtil 'androidx.test:orchestrator:1.5.0'
 
 }
+
