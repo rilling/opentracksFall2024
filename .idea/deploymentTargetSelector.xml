@@ -2,7 +2,7 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="6341_project_branch_rafsan">
+      <SelectionState runConfigName="opentracksFall2024">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

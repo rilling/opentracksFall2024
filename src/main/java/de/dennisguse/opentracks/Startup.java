@@ -64,6 +64,7 @@ public class Startup extends Application {
                 @SuppressLint("DiscouragedPrivateApi") Method getProcessName = activityThread.getDeclaredMethod("currentProcessName");
                 processName = (String) getProcessName.invoke(null);
             } catch (Exception ignored) {
+                Log.e("Exception", ignored.toString());
             }
         } else {
             processName = Application.getProcessName();

@@ -32,7 +32,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
 
     private Track.Id trackId;
 
-    private boolean isDiscarding = false;
+     // this is an issue i worked on - Karthikeyan
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,7 +141,7 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
 
     @Override
     protected void onDeleteConfirmed() {
-        isDiscarding = true;
+        boolean isDiscarding = true;
         viewBinding.loadingLayout.loadingText.setText(getString(R.string.track_discarding));
         viewBinding.contentLinearLayout.setVisibility(View.GONE);
         viewBinding.loadingLayout.loadingIndeterminate.setVisibility(View.VISIBLE);
