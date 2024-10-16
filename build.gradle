@@ -7,11 +7,14 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.6.1'
     }
+
 }
 
 plugins {
     id "org.sonarqube" version "5.1.0.4882"
 }
+
+
 
 apply plugin: 'com.android.application'
 
@@ -160,4 +163,5 @@ dependencies {
     androidTestImplementation 'org.mockito:mockito-android:5.13.0'
 
     androidTestUtil 'androidx.test:orchestrator:1.5.0'
+
 }
