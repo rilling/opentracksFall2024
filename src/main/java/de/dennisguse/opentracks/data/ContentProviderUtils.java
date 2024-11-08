@@ -325,23 +325,6 @@ public class ContentProviderUtils {
         values.put(TracksColumns.ACTIVITY_TYPE, track.getActivityType() != null ? track.getActivityType().getId() : null);
         values.put(TracksColumns.ACTIVITY_TYPE_LOCALIZED, track.getActivityTypeLocalized());
         values.put(TracksColumns.STARTTIME_OFFSET, track.getZoneOffset().getTotalSeconds());
-
-        addValues(trackStatistics, values);
-
-        return values;
-    }
-
-    public void updateTrackStatistics(@NonNull Track.Id trackId, @NonNull TrackStatistics trackStatistics) {
-        contentResolver.update(TracksColumns.CONTENT_URI, createContentValues(trackStatistics), TracksColumns._ID + "=?", new String[]{Long.toString(trackId.id())});
-    }
-
-    private ContentValues createContentValues(TrackStatistics trackStatistics) {
-        ContentValues values = new ContentValues();
-        addValues(trackStatistics, values);
-        return values;
-    }
-
-    private static void addValues(TrackStatistics trackStatistics, ContentValues values) {
         if (trackStatistics.getStartTime() != null) {
             values.put(TracksColumns.STARTTIME, trackStatistics.getStartTime().toEpochMilli());
         }
@@ -358,6 +341,33 @@ public class ContentProviderUtils {
         values.put(TracksColumns.MAX_ALTITUDE, trackStatistics.getMaxAltitude());
         values.put(TracksColumns.ALTITUDE_GAIN, trackStatistics.getTotalAltitudeGain());
         values.put(TracksColumns.ALTITUDE_LOSS, trackStatistics.getTotalAltitudeLoss());
+
+        return values;
+    }
+
+    public void updateTrackStatistics(@NonNull Track.Id trackId, @NonNull TrackStatistics trackStatistics) {
+        contentResolver.update(TracksColumns.CONTENT_URI, createContentValues(trackStatistics), TracksColumns._ID + "=?", new String[]{Long.toString(trackId.id())});
+    }
+
+    private ContentValues createContentValues(TrackStatistics trackStatistics) {
+        ContentValues values = new ContentValues();
+        if (trackStatistics.getStartTime() != null) {
+            values.put(TracksColumns.STARTTIME, trackStatistics.getStartTime().toEpochMilli());
+        }
+        if (trackStatistics.getStopTime() != null) {
+            values.put(TracksColumns.STOPTIME, trackStatistics.getStopTime().toEpochMilli());
+        }
+        values.put(TracksColumns.TOTALDISTANCE, trackStatistics.getTotalDistance().toM());
+        values.put(TracksColumns.TOTALTIME, trackStatistics.getTotalTime().toMillis());
+        values.put(TracksColumns.MOVINGTIME, trackStatistics.getMovingTime().toMillis());
+        values.put(TracksColumns.AVGSPEED, trackStatistics.getAverageSpeed().toMPS());
+        values.put(TracksColumns.AVGMOVINGSPEED, trackStatistics.getAverageMovingSpeed().toMPS());
+        values.put(TracksColumns.MAXSPEED, trackStatistics.getMaxSpeed().toMPS());
+        values.put(TracksColumns.MIN_ALTITUDE, trackStatistics.getMinAltitude());
+        values.put(TracksColumns.MAX_ALTITUDE, trackStatistics.getMaxAltitude());
+        values.put(TracksColumns.ALTITUDE_GAIN, trackStatistics.getTotalAltitudeGain());
+        values.put(TracksColumns.ALTITUDE_LOSS, trackStatistics.getTotalAltitudeLoss());
+        return values;
     }
 
     public Marker createMarker(Cursor cursor) {
