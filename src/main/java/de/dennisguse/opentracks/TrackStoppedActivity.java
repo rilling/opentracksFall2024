@@ -71,24 +71,8 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
 
         viewBinding.time.setText(StringUtils.formatElapsedTime(track.getTrackStatistics().getMovingTime()));
 
-        {
-            Pair<String, String> parts = SpeedFormatter.Builder()
-                    .setUnit(PreferencesUtils.getUnitSystem())
-                    .setReportSpeedOrPace(PreferencesUtils.isReportSpeed(track))
-                    .build(this)
-                    .getSpeedParts(track.getTrackStatistics().getAverageMovingSpeed());
-            viewBinding.speed.setText(parts.first);
-            viewBinding.speedUnit.setText(parts.second);
-        }
-
-        {
-            Pair<String, String> parts = DistanceFormatter.Builder()
-                    .setUnit(PreferencesUtils.getUnitSystem())
-                    .build(this)
-                    .getDistanceParts(track.getTrackStatistics().getTotalDistance());
-            viewBinding.distance.setText(parts.first);
-            viewBinding.distanceUnit.setText(parts.second);
-        }
+        updateDisplaySpeed(track);
+        updateDistanceDisplay(track);
 
         viewBinding.finishButton.setOnClickListener(v -> {
             storeTrackMetaData(contentProviderUtils, track);
@@ -102,6 +86,25 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
         });
 
         viewBinding.discardButton.setOnClickListener(v -> ConfirmDeleteDialogFragment.showDialog(getSupportFragmentManager(), trackId));
+    }
+    private void updateDistanceDisplay(Track track) {  // New method
+        Pair<String, String> parts = DistanceFormatter.Builder()
+                .setUnit(PreferencesUtils.getUnitSystem())
+                .build(this)
+                .getDistanceParts(track.getTrackStatistics().getTotalDistance());
+        viewBinding.distance.setText(parts.first);
+        viewBinding.distanceUnit.setText(parts.second);
+    }
+
+    private void updateDisplaySpeed(Track track)
+    {
+        Pair<String, String> parts = SpeedFormatter.Builder()
+                .setUnit(PreferencesUtils.getUnitSystem())
+                .setReportSpeedOrPace(PreferencesUtils.isReportSpeed(track))
+                .build(this)
+                .getSpeedParts(track.getTrackStatistics().getAverageMovingSpeed());
+        viewBinding.speed.setText(parts.first);
+        viewBinding.speedUnit.setText(parts.second);
     }
 
     private void storeTrackMetaData(ContentProviderUtils contentProviderUtils, Track track) {
