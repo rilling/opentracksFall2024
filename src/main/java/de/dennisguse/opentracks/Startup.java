@@ -66,6 +66,7 @@ public class Startup extends Application {
             } catch (Exception e) {
                 Log.e("Exception", e.toString());
                 return false;     
+
             }
         } else {
             processName = Application.getProcessName();
