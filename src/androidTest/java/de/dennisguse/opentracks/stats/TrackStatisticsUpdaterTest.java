@@ -209,18 +209,12 @@ public class TrackStatisticsUpdaterTest {
         assertEquals(Speed.of(2f), subject.getTrackStatistics().getMaxSpeed());
     }
 
-    @Test
-    public void addTrackPoint_idle_withoutDistance() {
-        TrackStatisticsUpdater subject = new TrackStatisticsUpdater();
-
-        // when
+    // Helper method to add common track points
+    private void addCommonTrackPoints(TrackStatisticsUpdater subject) {
         subject.addTrackPoints(List.of(
                 new TrackPoint(TrackPoint.Type.SEGMENT_START_MANUAL, Instant.ofEpochSecond(0)),
-                new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(1))
-                        .setSpeed(Speed.of(2f)),
-                new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(2))
-                        .setSpeed(Speed.of(2f)),
-
+                new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(1)),
+                new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(2)),
                 new TrackPoint(TrackPoint.Type.IDLE, Instant.ofEpochSecond(30)),
                 new TrackPoint(TrackPoint.Type.TRACKPOINT, Instant.ofEpochSecond(40))
                         .setHeartRate(50),
@@ -228,8 +222,23 @@ public class TrackStatisticsUpdaterTest {
                         .setHeartRate(50),
                 new TrackPoint(0, 1, Altitude.WGS84.of(0), Instant.ofEpochSecond(50)),
                 new TrackPoint(0, 2, Altitude.WGS84.of(0), Instant.ofEpochSecond(55)),
-
                 new TrackPoint(TrackPoint.Type.SEGMENT_END_MANUAL, Instant.ofEpochSecond(60))
+        ));
+    }
+
+    @Test
+    public void addTrackPoint_idle_withoutDistance() {
+        TrackStatisticsUpdater subject = new TrackStatisticsUpdater();
+
+        // Add common track points without setting sensor distance
+        addCommonTrackPoints(subject);
+
+        // when
+        subject.addTrackPoints(List.of(
+                new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(1))
+                        .setSpeed(Speed.of(2f)),
+                new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(2))
+                        .setSpeed(Speed.of(2f))
         ));
 
         // then
@@ -240,9 +249,11 @@ public class TrackStatisticsUpdaterTest {
     public void addTrackPoint_idle_withDistance() {
         TrackStatisticsUpdater subject = new TrackStatisticsUpdater();
 
+        // Add common track points with sensor distance
+        addCommonTrackPoints(subject);
+
         // when
         subject.addTrackPoints(List.of(
-                new TrackPoint(TrackPoint.Type.SEGMENT_START_MANUAL, Instant.ofEpochSecond(0)),
                 new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(1))
                         .setSensorDistance(Distance.of(10)),
                 new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(2))
@@ -250,16 +261,10 @@ public class TrackStatisticsUpdaterTest {
 
                 new TrackPoint(TrackPoint.Type.IDLE, Instant.ofEpochSecond(30))
                         .setSensorDistance(Distance.ofKilometer(1)),
-                new TrackPoint(TrackPoint.Type.TRACKPOINT, Instant.ofEpochSecond(40))
-                        .setHeartRate(50),
-                new TrackPoint(TrackPoint.Type.TRACKPOINT, Instant.ofEpochSecond(45))
-                        .setHeartRate(50),
                 new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(50))
                         .setSensorDistance(Distance.of(10)),
                 new TrackPoint(0, 0, Altitude.WGS84.of(0), Instant.ofEpochSecond(55))
-                        .setSensorDistance(Distance.of(10)),
-
-                new TrackPoint(TrackPoint.Type.SEGMENT_END_MANUAL, Instant.ofEpochSecond(60))
+                        .setSensorDistance(Distance.of(10))
         ));
 
         // then
