@@ -37,6 +37,13 @@ public class DistanceFormatter {
 
         return resources.getString(R.string.distance_with_unit, distanceParts.first, distanceParts.second);
     }
+    private Pair<String, String> formatDistanceBasedOnThreshold(Distance distance, Distance threshold, int decimalCount, String largerUnit, String smallerUnit) {
+        if (distance.greaterThan(threshold)) {
+            return new Pair<>(StringUtils.formatDecimal(distance.toMI(), decimalCount), largerUnit);
+        } else {
+            return new Pair<>(StringUtils.formatDecimal(distance.toFT(), decimalCount), smallerUnit);
+        }
+    }
 
     /**
      * Get the formatted distance with unit.
@@ -63,18 +70,13 @@ public class DistanceFormatter {
                 }
             }
             case IMPERIAL_FEET -> {
-                if (distance.greaterThan(Distance.ofMile(threshold))) {
-                    return new Pair<>(StringUtils.formatDecimal(distance.toMI(), decimalCount), resources.getString(R.string.unit_mile));
-                } else {
-                    return new Pair<>(StringUtils.formatDecimal(distance.toFT(), decimalCount), resources.getString(R.string.unit_feet));
-                }
+                return formatDistanceBasedOnThreshold(distance, Distance.ofMile(threshold), decimalCount, resources.getString(R.string.unit_mile),
+                        resources.getString(R.string.unit_feet));
             }
+
             case IMPERIAL_METER -> {
-                if (distance.greaterThan(Distance.ofMile(threshold))) {
-                    return new Pair<>(StringUtils.formatDecimal(distance.toMI(), decimalCount), resources.getString(R.string.unit_mile));
-                } else {
-                    return new Pair<>(StringUtils.formatDecimal(distance.toM(), decimalCount), resources.getString(R.string.unit_meter));
-                }
+                return formatDistanceBasedOnThreshold(distance, Distance.ofMile(threshold), decimalCount, resources.getString(R.string.unit_mile),
+                        resources.getString(R.string.unit_meter));
             }
             case NAUTICAL_IMPERIAL -> {
                 if (distance.greaterThan(Distance.ofNauticalMile(threshold))) {
