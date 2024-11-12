@@ -2,6 +2,7 @@ package de.dennisguse.opentracks.io.file.importer;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -49,7 +50,7 @@ public abstract class DirectoryChooserActivity extends AppCompatActivity {
     }
 
     protected boolean isDirectoryValid(final DocumentFile directoryUri) {
-        return directoryUri != null && directoryUri.isDirectory() && directoryUri.canRead();
+        return directoryUri != null && directoryUri.isDirectory() && directoryUri.canRead() && directoryUri.canWrite();
     }
 
     protected void onActivityResultCustom(@NonNull Intent resultData) {
@@ -67,6 +68,13 @@ public abstract class DirectoryChooserActivity extends AppCompatActivity {
     }
 
     protected abstract Intent createNextActivityIntent(Uri directoryUri);
+
+    protected Intent createNextExportActivityIntent(Context context, Uri directoryUri){
+        Intent intent = IntentUtils.newIntent(context, ExportActivity.class);
+        intent.putExtra(ExportActivity.EXTRA_DIRECTORY_URI_KEY, directoryUri);
+        intent.putExtra(ExportActivity.EXTRA_TRACKFILEFORMAT_KEY, PreferencesUtils.getExportTrackFileFormat());
+        return intent;
+    }
 
     public static class ImportDirectoryChooserActivity extends DirectoryChooserActivity {
 
@@ -87,17 +95,10 @@ public abstract class DirectoryChooserActivity extends AppCompatActivity {
             return IntentUtils.toDocumentFile(this, PreferencesUtils.getDefaultExportDirectoryUri());
         }
 
-        @Override
-        protected boolean isDirectoryValid(final DocumentFile directoryUri) {
-            return super.isDirectoryValid(directoryUri) && directoryUri.canWrite();
-        }
 
         @Override
         protected Intent createNextActivityIntent(Uri directoryUri) {
-            Intent intent = IntentUtils.newIntent(this, ExportActivity.class);
-            intent.putExtra(ExportActivity.EXTRA_DIRECTORY_URI_KEY, directoryUri);
-            intent.putExtra(ExportActivity.EXTRA_TRACKFILEFORMAT_KEY, PreferencesUtils.getExportTrackFileFormat());
-            return intent;
+            return this.createNextExportActivityIntent(this, directoryUri);
         }
     }
 
@@ -110,16 +111,10 @@ public abstract class DirectoryChooserActivity extends AppCompatActivity {
             return IntentUtils.toDocumentFile(this, PreferencesUtils.getDefaultExportDirectoryUri());
         }
 
-        @Override
-        protected boolean isDirectoryValid(final DocumentFile directoryUri) {
-            return super.isDirectoryValid(directoryUri) && directoryUri.canWrite();
-        }
 
         @Override
         protected Intent createNextActivityIntent(Uri directoryUri) {
-            Intent intent = IntentUtils.newIntent(this, ExportActivity.class);
-            intent.putExtra(ExportActivity.EXTRA_DIRECTORY_URI_KEY, directoryUri);
-            intent.putExtra(ExportActivity.EXTRA_ONE_FILE_KEY, true);
+            Intent intent = this.createNextExportActivityIntent(this, directoryUri);
             intent.putExtra(ExportActivity.EXTRA_TRACKFILEFORMAT_KEY, PreferencesUtils.getExportTrackFileFormat());
             return intent;
         }
@@ -139,10 +134,6 @@ public abstract class DirectoryChooserActivity extends AppCompatActivity {
             IntentUtils.persistDirectoryAccessPermission(this, newDirectoryUri, resultData.getFlags());
         }
 
-        @Override
-        protected boolean isDirectoryValid(final DocumentFile directoryUri) {
-            return super.isDirectoryValid(directoryUri) && directoryUri.canWrite();
-        }
 
         @Override
         protected DocumentFile configureDirectoryChooserIntent(Intent intent) {
