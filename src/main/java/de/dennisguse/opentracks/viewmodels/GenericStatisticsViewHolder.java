@@ -170,15 +170,7 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
 
         @Override
         public void onChanged(UnitSystem unitSystem, RecordingData data) {
-            SpeedFormatter speedFormatterSpeed = SpeedFormatter.Builder()
-                    .setUnit(unitSystem)
-                    .setReportSpeedOrPace(false)
-                    .build(getContext());
-
-            Pair<String, String> valueAndUnit = speedFormatterSpeed.getSpeedParts(data.getTrackStatistics().getAverageMovingSpeed());
-
-            getBinding().statsValue.setText(valueAndUnit.first);
-            getBinding().statsUnit.setText(valueAndUnit.second);
+            myFunction(unitSystem, data);
             getBinding().statsDescriptionMain.setText(getContext().getString(R.string.stats_average_moving_pace));
         }
     }
@@ -187,15 +179,7 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
 
         @Override
         public void onChanged(UnitSystem unitSystem, RecordingData data) {
-            SpeedFormatter speedFormatterSpeed = SpeedFormatter.Builder()
-                    .setUnit(unitSystem)
-                    .setReportSpeedOrPace(false)
-                    .build(getContext());
-
-            Pair<String, String> valueAndUnit = speedFormatterSpeed.getSpeedParts(data.getTrackStatistics().getAverageMovingSpeed());
-
-            getBinding().statsValue.setText(valueAndUnit.first);
-            getBinding().statsUnit.setText(valueAndUnit.second);
+            myFunction(unitSystem, data);
             getBinding().statsDescriptionMain.setText(getContext().getString(R.string.stats_average_pace));
         }
     }
@@ -264,5 +248,17 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
             getBinding().statsValue.setText(value);
             getBinding().statsDescriptionMain.setText(R.string.stats_coordinates);
         }
+    }
+
+    public void myFunction (UnitSystem unitSystem, RecordingData data){
+        SpeedFormatter speedFormatterSpeed = SpeedFormatter.Builder()
+                .setUnit(unitSystem)
+                .setReportSpeedOrPace(false)
+                .build(getContext());
+
+        Pair<String, String> valueAndUnit = speedFormatterSpeed.getSpeedParts(data.getTrackStatistics().getAverageMovingSpeed());
+
+        getBinding().statsValue.setText(valueAndUnit.first);
+        getBinding().statsUnit.setText(valueAndUnit.second);
     }
 }

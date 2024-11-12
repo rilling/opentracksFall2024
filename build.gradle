@@ -1,11 +1,4 @@
-apply plugin: 'com.android.application'
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
 
 buildscript {
     repositories {
@@ -17,6 +10,24 @@ buildscript {
     }
 
 }
+
+plugins {
+    id "org.sonarqube" version "5.1.0.4882"
+}
+
+apply plugin: 'com.android.application'
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+
+
+apply plugin: 'com.android.application'
+
 
 def getVersionName = { ->
     try {

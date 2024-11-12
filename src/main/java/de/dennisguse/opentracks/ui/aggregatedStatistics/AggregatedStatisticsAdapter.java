@@ -82,6 +82,7 @@ public class AggregatedStatisticsAdapter extends RecyclerView.Adapter<RecyclerVi
 
 
 
+
         public void setSpeedOrPace(AggregatedStatistics.AggregatedStatistic aggregatedStatistic, boolean isPace) {
             setCommonValues(aggregatedStatistic);
 
@@ -99,7 +100,17 @@ public class AggregatedStatisticsAdapter extends RecyclerView.Adapter<RecyclerVi
             viewBinding.aggregatedStatsMaxRate.setText(maxParts.first);
             viewBinding.aggregatedStatsMaxRateUnit.setText(maxParts.second);
             viewBinding.aggregatedStatsMaxRateLabel.setText(context.getString(maxLabelResId));
+}
+
+        public void setSpeed(AggregatedStatistics.AggregatedStatistic aggregatedStatistic) {
+            setPaceAndSpeedGeneric(aggregatedStatistic, context.getString(R.string.stats_average_moving_speed), context.getString(R.string.stats_max_speed));
         }
+
+        public void setPace(AggregatedStatistics.AggregatedStatistic aggregatedStatistic) {
+            setPaceAndSpeedGeneric(aggregatedStatistic, context.getString(R.string.stats_average_moving_pace), context.getString(R.string.stats_fastest_pace));
+        }
+
+       
 
 
         //TODO Check preference handling.
