@@ -670,6 +670,14 @@ public class ContentProviderUtils {
         }
         return contentResolver.bulkInsert(MarkerColumns.CONTENT_URI, values);
     }
+    private TrackPoint.Id getTrackPointIdFromCursor(String selection, String[] selectionArgs) {
+        try (Cursor cursor = getTrackPointCursor(new String[]{TrackPointsColumns._ID}, selection, selectionArgs, TrackPointsColumns._ID)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                return new TrackPoint.Id(cursor.getLong(cursor.getColumnIndexOrThrow(TrackPointsColumns._ID)));
+            }
+        }
+        return null;
+    }
 
     /**
      * Gets the last location id for a track.
@@ -679,14 +687,10 @@ public class ContentProviderUtils {
      */
     @Deprecated
     public TrackPoint.Id getLastTrackPointId(@NonNull Track.Id trackId) {
-        String selection = TrackPointsColumns._ID + "=(SELECT MAX(" + TrackPointsColumns._ID + ") from " + TrackPointsColumns.TABLE_NAME + " WHERE " + TrackPointsColumns.TRACKID + "=?)";
+        String selection = TrackPointsColumns._ID + "=(SELECT MAX(" + TrackPointsColumns._ID + ") FROM " + TrackPointsColumns.TABLE_NAME +
+                " WHERE " + TrackPointsColumns.TRACKID + "=?)";
         String[] selectionArgs = new String[]{Long.toString(trackId.id())};
-        try (Cursor cursor = getTrackPointCursor(new String[]{TrackPointsColumns._ID}, selection, selectionArgs, TrackPointsColumns._ID)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                return new TrackPoint.Id(cursor.getLong(cursor.getColumnIndexOrThrow(TrackPointsColumns._ID)));
-            }
-        }
-        return null;
+        return getTrackPointIdFromCursor(selection, selectionArgs);
     }
 
     /**
@@ -698,14 +702,10 @@ public class ContentProviderUtils {
      */
     @Deprecated
     public TrackPoint.Id getTrackPointId(Track.Id trackId, Location location) {
-        String selection = TrackPointsColumns._ID + "=(SELECT MAX(" + TrackPointsColumns._ID + ") FROM " + TrackPointsColumns.TABLE_NAME + " WHERE " + TrackPointsColumns.TRACKID + "=? AND " + TrackPointsColumns.TIME + "=?)";
+        String selection = TrackPointsColumns._ID + "=(SELECT MAX(" + TrackPointsColumns._ID + ") FROM " + TrackPointsColumns.TABLE_NAME +
+                " WHERE " + TrackPointsColumns.TRACKID + "=? AND " + TrackPointsColumns.TIME + " <=?)";
         String[] selectionArgs = new String[]{Long.toString(trackId.id()), Long.toString(location.getTime())};
-        try (Cursor cursor = getTrackPointCursor(new String[]{TrackPointsColumns._ID}, selection, selectionArgs, TrackPointsColumns._ID)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                return new TrackPoint.Id(cursor.getLong(cursor.getColumnIndexOrThrow(TrackPointsColumns._ID)));
-            }
-        }
-        return null;
+        return getTrackPointIdFromCursor(selection, selectionArgs);
     }
 
     /**
