@@ -106,7 +106,8 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
         }
         if (key == null) return;
 
-        runOnUiThread(TrackRecordingActivity.this::invalidateOptionsMenu); //TODO Should not be necessary
+        //runOnUiThread(TrackRecordingActivity.this::invalidateOptionsMenu); //TODO Should not be necessary
+        invalidateOptionsMenu();
     };
 
     @Override
