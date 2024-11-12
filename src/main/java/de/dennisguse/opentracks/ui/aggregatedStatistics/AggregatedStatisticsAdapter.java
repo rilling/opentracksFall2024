@@ -43,12 +43,11 @@ public class AggregatedStatisticsAdapter extends RecyclerView.Adapter<RecyclerVi
         AggregatedStatistics.AggregatedStatistic aggregatedStatistic = aggregatedStatistics.getItem(position);
 
         String type = aggregatedStatistic.getActivityTypeLocalized();
-        if (ActivityType.findByLocalizedString(context, type).isShowSpeedPreferred()) {
-            viewHolder.setSpeed(aggregatedStatistic);
-        } else {
-            viewHolder.setPace(aggregatedStatistic);
-        }
+        boolean isPace = !ActivityType.findByLocalizedString(context, type).isShowSpeedPreferred();
+
+        viewHolder.setSpeedOrPace(aggregatedStatistic, isPace);
     }
+
 
     @Override
     public int getItemCount() {
@@ -81,43 +80,27 @@ public class AggregatedStatisticsAdapter extends RecyclerView.Adapter<RecyclerVi
             this.viewBinding = viewBinding;
         }
 
-        public void setSpeed(AggregatedStatistics.AggregatedStatistic aggregatedStatistic) {
+
+
+        public void setSpeedOrPace(AggregatedStatistics.AggregatedStatistic aggregatedStatistic, boolean isPace) {
             setCommonValues(aggregatedStatistic);
 
             SpeedFormatter formatter = SpeedFormatter.Builder().setUnit(unitSystem).setReportSpeedOrPace(reportSpeed).build(context);
-            {
-                Pair<String, String> parts = formatter.getSpeedParts(aggregatedStatistic.getTrackStatistics().getAverageMovingSpeed());
-                viewBinding.aggregatedStatsAvgRate.setText(parts.first);
-                viewBinding.aggregatedStatsAvgRateUnit.setText(parts.second);
-                viewBinding.aggregatedStatsAvgRateLabel.setText(context.getString(R.string.stats_average_moving_speed));
-            }
 
-            {
-                Pair<String, String> parts = formatter.getSpeedParts(aggregatedStatistic.getTrackStatistics().getMaxSpeed());
-                viewBinding.aggregatedStatsMaxRate.setText(parts.first);
-                viewBinding.aggregatedStatsMaxRateUnit.setText(parts.second);
-                viewBinding.aggregatedStatsMaxRateLabel.setText(context.getString(R.string.stats_max_speed));
-            }
+            int avgLabelResId = isPace ? R.string.stats_average_moving_pace : R.string.stats_average_moving_speed;
+            int maxLabelResId = isPace ? R.string.stats_fastest_pace : R.string.stats_max_speed;
+
+            Pair<String, String> avgParts = formatter.getSpeedParts(aggregatedStatistic.getTrackStatistics().getAverageMovingSpeed());
+            viewBinding.aggregatedStatsAvgRate.setText(avgParts.first);
+            viewBinding.aggregatedStatsAvgRateUnit.setText(avgParts.second);
+            viewBinding.aggregatedStatsAvgRateLabel.setText(context.getString(avgLabelResId));
+
+            Pair<String, String> maxParts = formatter.getSpeedParts(aggregatedStatistic.getTrackStatistics().getMaxSpeed());
+            viewBinding.aggregatedStatsMaxRate.setText(maxParts.first);
+            viewBinding.aggregatedStatsMaxRateUnit.setText(maxParts.second);
+            viewBinding.aggregatedStatsMaxRateLabel.setText(context.getString(maxLabelResId));
         }
 
-        public void setPace(AggregatedStatistics.AggregatedStatistic aggregatedStatistic) {
-            setCommonValues(aggregatedStatistic);
-
-            SpeedFormatter formatter = SpeedFormatter.Builder().setUnit(unitSystem).setReportSpeedOrPace(reportSpeed).build(context);
-            {
-                Pair<String, String> parts = formatter.getSpeedParts(aggregatedStatistic.getTrackStatistics().getAverageMovingSpeed());
-                viewBinding.aggregatedStatsAvgRate.setText(parts.first);
-                viewBinding.aggregatedStatsAvgRateUnit.setText(parts.second);
-                viewBinding.aggregatedStatsAvgRateLabel.setText(context.getString(R.string.stats_average_moving_pace));
-            }
-
-            {
-                Pair<String, String> parts = formatter.getSpeedParts(aggregatedStatistic.getTrackStatistics().getMaxSpeed());
-                viewBinding.aggregatedStatsMaxRate.setText(parts.first);
-                viewBinding.aggregatedStatsMaxRateUnit.setText(parts.second);
-                viewBinding.aggregatedStatsMaxRateLabel.setText(R.string.stats_fastest_pace);
-            }
-        }
 
         //TODO Check preference handling.
         private void setCommonValues(AggregatedStatistics.AggregatedStatistic aggregatedStatistic) {
