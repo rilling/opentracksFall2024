@@ -60,49 +60,74 @@ public abstract class SensorStatisticsViewHolder extends StatisticViewHolder<Sta
         }
     }
 
-    public static class SensorCadence extends SensorStatisticsViewHolder {
+    public static abstract class SensorStatisticsViewHolderBase extends SensorStatisticsViewHolder {
 
         @Override
         public void onChanged(UnitSystem unitSystem, RecordingData data) {
             SensorDataSet sensorDataSet = data.sensorDataSet();
             String sensorName = getContext().getString(R.string.value_unknown);
 
-            Pair<String, String> valueAndUnit;
+            Pair<String, String> valueAndUnit = getValueAndUnit(sensorDataSet);
+            sensorName = getSensorName(sensorDataSet, sensorName);
+
+            updateUI(valueAndUnit, sensorName);
+        }
+
+        protected abstract Pair<String, String> getValueAndUnit(SensorDataSet sensorDataSet);
+        protected abstract String getSensorName(SensorDataSet sensorDataSet, String defaultSensorName);
+        protected abstract int getDescriptionText();
+
+        private void updateUI(Pair<String, String> valueAndUnit, String sensorName) {
+            getBinding().statsValue.setText(valueAndUnit.first);
+            getBinding().statsUnit.setText(valueAndUnit.second);
+            getBinding().statsDescriptionMain.setText(getDescriptionText());
+            getBinding().statsDescriptionSecondary.setText(sensorName);
+        }
+    }
+
+    public static class SensorCadence extends SensorStatisticsViewHolderBase {
+
+        @Override
+        protected Pair<String, String> getValueAndUnit(SensorDataSet sensorDataSet) {
             if (sensorDataSet != null && sensorDataSet.getCadence() != null) {
-                valueAndUnit = StringUtils.getCadenceParts(getContext(), sensorDataSet.getCadence().first);
-                sensorName = sensorDataSet.getCadence().second;
+                return StringUtils.getCadenceParts(getContext(), sensorDataSet.getCadence().first);
             } else {
-                valueAndUnit = StringUtils.getCadenceParts(getContext(), null);
+                return StringUtils.getCadenceParts(getContext(), null);
             }
-
-            getBinding().statsValue.setText(valueAndUnit.first);
-            getBinding().statsUnit.setText(valueAndUnit.second);
-            getBinding().statsDescriptionMain.setText(R.string.stats_sensors_cadence);
-
-            getBinding().statsDescriptionSecondary.setText(sensorName);
         }
-    }
-
-    public static class SensorPower extends SensorStatisticsViewHolder {
 
         @Override
-        public void onChanged(UnitSystem unitSystem, RecordingData data) {
-            SensorDataSet sensorDataSet = data.sensorDataSet();
-            String sensorName = getContext().getString(R.string.value_unknown);
+        protected String getSensorName(SensorDataSet sensorDataSet, String defaultSensorName) {
+            return sensorDataSet != null && sensorDataSet.getCadence() != null ? sensorDataSet.getCadence().second : defaultSensorName;
+        }
 
-            Pair<String, String> valueAndUnit;
-            if (sensorDataSet != null && sensorDataSet.getCyclingPower() != null) {
-                valueAndUnit = StringUtils.getPowerParts(getContext(), sensorDataSet.getCyclingPower().getValue());
-                sensorName = sensorDataSet.getCyclingPower().getSensorNameOrAddress();
-            } else {
-                valueAndUnit = StringUtils.getCadenceParts(getContext(), null);
-            }
-
-            getBinding().statsValue.setText(valueAndUnit.first);
-            getBinding().statsUnit.setText(valueAndUnit.second);
-            getBinding().statsDescriptionMain.setText(R.string.stats_sensors_power);
-
-            getBinding().statsDescriptionSecondary.setText(sensorName);
+        @Override
+        protected int getDescriptionText() {
+            return R.string.stats_sensors_cadence;
         }
     }
+
+    public static class SensorPower extends SensorStatisticsViewHolderBase {
+
+        @Override
+        protected Pair<String, String> getValueAndUnit(SensorDataSet sensorDataSet) {
+            if (sensorDataSet != null && sensorDataSet.getCyclingPower() != null) {
+                return StringUtils.getPowerParts(getContext(), sensorDataSet.getCyclingPower().getValue());
+            } else {
+                return StringUtils.getCadenceParts(getContext(), null); 
+            }
+        }
+
+        @Override
+        protected String getSensorName(SensorDataSet sensorDataSet, String defaultSensorName) {
+            return sensorDataSet != null && sensorDataSet.getCyclingPower() != null ?
+                    sensorDataSet.getCyclingPower().getSensorNameOrAddress() : defaultSensorName;
+        }
+
+        @Override
+        protected int getDescriptionText() {
+            return R.string.stats_sensors_power;
+        }
+    }
+
 }
