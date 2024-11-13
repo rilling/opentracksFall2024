@@ -1,11 +1,15 @@
+apply plugin: 'com.android.application'
 
-buildscript {
+allprojects {
     repositories {
         google()
         mavenCentral()
     }
+}
+
+buildscript {
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.6.1'
+        classpath 'com.android.tools.build:gradle:8.5.1'
     }
 
 }
@@ -18,10 +22,26 @@ plugins {
 
 apply plugin: 'com.android.application'
 
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.6.1'
+    }
+
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "opentracksFall2024"
+        property "sonar.projectName", "opentracksFall2024"
+        property "sonar.projectVersion", "1.0"
+        property "sonar.sources", "src/main/java"
+        property "sonar.host.url", "http://localhost:9000/"
+        property "sonar.login", "sqp_e04775b127cd2a3850f4d91c0496ed59a3e8d5d9" // Optional
     }
 }
 
@@ -83,6 +103,7 @@ android {
         testInstrumentationRunner "de.dennisguse.opentracks.TestRunner"
         testInstrumentationRunnerArguments clearPackageData: 'true'
     }
+
     signingConfigs {
         nightly {
             if (System.getProperty("nightly_store_file") != null) {
@@ -165,3 +186,4 @@ dependencies {
     androidTestUtil 'androidx.test:orchestrator:1.5.0'
 
 }
+

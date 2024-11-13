@@ -165,7 +165,7 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
         }
     }
 
-    public void setSpeedOrPace(UnitSystem unitSystem, RecordingData data, boolean reportSpeed, int descriptionResId) {
+    private void setSpeedOrPace(UnitSystem unitSystem, RecordingData data, boolean reportSpeed, int descriptionResId) {
         SpeedFormatter speedFormatter = SpeedFormatter.Builder()
                 .setUnit(unitSystem)
                 .setReportSpeedOrPace(reportSpeed)
