@@ -474,21 +474,23 @@ class CustomSQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     private void downgradeFrom33to32(SQLiteDatabase db) {
-        db.beginTransaction();
+        ZoneRules zoneRules = ZoneOffset.systemDefault().getRules();
+        try (Cursor cursor = db.query("tracks", new String[]{"_id", "starttime"}, null, null, null, null, null)) {
+            if (cursor.moveToFirst()) {
+                int trackIdIndex = cursor.getColumnIndexOrThrow("_id");
+                int startTimeIndex = cursor.getColumnIndexOrThrow("starttime");
+                do {
+                    Track.Id trackId = new Track.Id(cursor.getLong(trackIdIndex));
+                    long startTime = cursor.getLong(startTimeIndex);
+                    int offsetValue = zoneRules.getOffset(Instant.ofEpochMilli(startTime)).getTotalSeconds();
 
-        db.execSQL("DROP INDEX tracks_uuid_index");
-
-        db.execSQL("ALTER TABLE tracks RENAME TO tracks_old");
-        db.execSQL("CREATE TABLE tracks (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, category TEXT, starttime INTEGER, stoptime INTEGER, numpoints INTEGER, totaldistance FLOAT, totaltime INTEGER, movingtime INTEGER, avgspeed FLOAT, avgmovingspeed FLOAT, maxspeed FLOAT, minelevation FLOAT, maxelevation FLOAT, elevationgain FLOAT, icon TEXT, uuid BLOB, elevationloss FLOAT)");
-        db.execSQL("INSERT INTO tracks SELECT _id, name, description, category, starttime, stoptime, numpoints, totaldistance, totaltime, movingtime, avgspeed, avgmovingspeed, maxspeed, minelevation, maxelevation, elevationgain, icon, uuid, elevationloss FROM tracks_old");
-        db.execSQL("DROP TABLE tracks_old");
-
-        db.execSQL("CREATE UNIQUE INDEX tracks_uuid_index ON tracks(uuid)");
-
-
-        db.setTransactionSuccessful();
-        db.endTransaction();
+                    // Call the reusable method to handle the update
+                    updateTrackColumn(db, "starttime_offset", offsetValue, trackId.id());
+                } while (cursor.moveToNext());
+            }
+        }
     }
+
 
 
     /**
@@ -532,17 +534,7 @@ class CustomSQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     private void downgradeFrom35to34(SQLiteDatabase db) {
-        db.beginTransaction();
-
-        db.execSQL("ALTER TABLE trackpoints RENAME TO trackpoints_old");
-        db.execSQL("CREATE TABLE trackpoints (_id INTEGER PRIMARY KEY AUTOINCREMENT, trackid INTEGER NOT NULL, longitude INTEGER, latitude INTEGER, time INTEGER, elevation FLOAT, accuracy FLOAT, speed FLOAT, bearing FLOAT, sensor_heartrate FLOAT, sensor_cadence FLOAT, sensor_power FLOAT, elevation_gain FLOAT, elevation_loss FLOAT, type TEXT CHECK(type IN (-2, -1, 0, 1, 2)), sensor_distance FLOAT, accuracy_vertical FLOAT, FOREIGN KEY (trackid) REFERENCES tracks(_id) ON UPDATE CASCADE ON DELETE CASCADE)");
-        db.execSQL("INSERT INTO trackpoints SELECT _id, trackid, longitude, latitude, time, elevation, accuracy, speed, bearing, sensor_heartrate, sensor_cadence, sensor_power, elevation_gain, elevation_gain, type, sensor_distance, accuracy_vertical FROM trackpoints_old");
-        db.execSQL("DROP TABLE trackpoints_old");
-
-        db.execSQL("CREATE INDEX trackpoints_trackid_index ON trackpoints(trackid)");
-
-        db.setTransactionSuccessful();
-        db.endTransaction();
+        transactionInTrackpoints(db);
     }
 
     private void upgradeFrom35to36(SQLiteDatabase db) {
@@ -561,6 +553,10 @@ class CustomSQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     private void downgradeFrom36to35(SQLiteDatabase db) {
+        transactionInTrackpoints(db);
+    }
+
+    private void transactionInTrackpoints(SQLiteDatabase db) {
         db.beginTransaction();
 
         db.execSQL("ALTER TABLE trackpoints RENAME TO trackpoints_old");
@@ -631,20 +627,21 @@ class CustomSQLiteOpenHelper extends SQLiteOpenHelper {
     }
 
     private void downgradeFrom37to36(SQLiteDatabase db) {
-        db.beginTransaction();
+        try (Cursor cursor = db.query("tracks", new String[]{"_id", "activity_type"}, null, null, null, null, null)) {
+            if (cursor.moveToFirst()) {
+                int trackIdIndex = cursor.getColumnIndexOrThrow("_id");
+                int activityTypeIndex = cursor.getColumnIndexOrThrow("activity_type");
+                do {
+                    Track.Id trackId = new Track.Id(cursor.getLong(trackIdIndex));
+                    ActivityType activityType = ActivityType.findBy(cursor.getString(activityTypeIndex));
 
-        db.execSQL("DROP INDEX tracks_uuid_index");
-
-        db.execSQL("ALTER TABLE tracks RENAME TO tracks_old");
-        db.execSQL("CREATE TABLE tracks (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, category TEXT, starttime INTEGER, stoptime INTEGER, numpoints INTEGER, totaldistance FLOAT, totaltime INTEGER, movingtime INTEGER, avgspeed FLOAT, avgmovingspeed FLOAT, maxspeed FLOAT, minelevation FLOAT, maxelevation FLOAT, elevationgain FLOAT, icon TEXT, uuid BLOB, elevationloss FLOAT, starttime_offset INTEGER)");
-        db.execSQL("INSERT INTO tracks SELECT _id, name, description, category, starttime, stoptime, numpoints, totaldistance, totaltime, movingtime, avgspeed, avgmovingspeed, maxspeed, minelevation, maxelevation, elevationgain, icon, uuid, elevationloss, starttime_offset FROM tracks_old");
-        db.execSQL("DROP TABLE tracks_old");
-
-        db.execSQL("CREATE UNIQUE INDEX tracks_uuid_index ON tracks(uuid)");
-
-        db.setTransactionSuccessful();
-        db.endTransaction();
+                    // Call the reusable method to handle the update
+                    updateTrackColumn(db, "activity_type", activityType.getId(), trackId.id());
+                } while (cursor.moveToNext());
+            }
+        }
     }
+
 
     private void upgradeFrom37to38(SQLiteDatabase db) {
         db.beginTransaction();
@@ -669,5 +666,24 @@ class CustomSQLiteOpenHelper extends SQLiteOpenHelper {
         db.setTransactionSuccessful();
         db.endTransaction();
     }
+
+    private void updateTrackColumn(SQLiteDatabase db, String columnName, Object value, long trackId) {
+        db.beginTransaction();
+        try {
+            ContentValues cv = new ContentValues();
+            if (value instanceof Integer) {
+                cv.put(columnName, (Integer) value);
+            } else if (value instanceof Long) {
+                cv.put(columnName, (Long) value);
+            } else if (value instanceof String) {
+                cv.put(columnName, (String) value);
+            }
+            db.update("tracks", cv, "_id = ?", new String[]{String.valueOf(trackId)});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
 
 }

@@ -37,6 +37,20 @@ public class MarkerUtils {
         return ContextCompat.getDrawable(context, ICON_ID);
     }
 
+
+    /**
+     * Creates a unique file for storing photos in the track's folder.
+     *
+     * @param context the context
+     * @param trackId the track id
+     * @return the unique file
+     */
+    private static File createUniquePhotoFile(Context context, Track.Id trackId) {
+        File dir = FileUtils.getPhotoDir(context, trackId);
+        String fileName = SimpleDateFormat.getDateTimeInstance().format(new Date());
+        return new File(dir, FileUtils.buildUniqueFileName(dir, fileName, JPEG_EXTENSION));
+    }
+
     /**
      * Sends a take picture request to the camera app.
      * The picture is then stored in the track's folder.
@@ -45,11 +59,7 @@ public class MarkerUtils {
      * @param trackId the track id
      */
     static Pair<Intent, Uri> createTakePictureIntent(Context context, Track.Id trackId) {
-        File dir = FileUtils.getPhotoDir(context, trackId);
-
-        String fileName = SimpleDateFormat.getDateTimeInstance().format(new Date());
-        File file = new File(dir, FileUtils.buildUniqueFileName(dir, fileName, JPEG_EXTENSION));
-
+        File file = createUniquePhotoFile(context, trackId);
         Uri photoUri = FileProvider.getUriForFile(context, FileUtils.FILEPROVIDER, file);
         Log.d(TAG, "Taking photo to URI: " + photoUri);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -59,12 +69,7 @@ public class MarkerUtils {
 
     @VisibleForTesting(otherwise = 3)
     public static String getImageUrl(Context context, Track.Id trackId) {
-        File dir = FileUtils.getPhotoDir(context, trackId);
-
-        String fileName = SimpleDateFormat.getDateTimeInstance().format(new Date());
-        File file = new File(dir, FileUtils.buildUniqueFileName(dir, fileName, JPEG_EXTENSION));
-
-        return file.getAbsolutePath();
+        return createUniquePhotoFile(context, trackId).getAbsolutePath();
     }
 
     /**

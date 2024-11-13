@@ -43,6 +43,7 @@ public class TrackEditActivity extends AbstractActivity implements ChooseActivit
 
     private static final String ICON_VALUE_KEY = "icon_value_key";
 
+    private ContentProviderUtils contentProviderUtils;
     private ActivityType activityType;
 
     private TrackEditBinding viewBinding;
@@ -59,7 +60,8 @@ public class TrackEditActivity extends AbstractActivity implements ChooseActivit
             return;
         }
 
-        ContentProviderUtils contentProviderUtils = new ContentProviderUtils(this);
+
+        contentProviderUtils = new ContentProviderUtils(this);
         Track track = contentProviderUtils.getTrack(trackId);
         if (track == null) {
             Log.e(TAG, "No track for " + trackId.id());
