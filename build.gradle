@@ -14,7 +14,7 @@ buildscript {
 
 }
 
-plugins {
+pmsdplugins {
     id "org.sonarqube" version "5.1.0.4882"
 }
 
