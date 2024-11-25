@@ -114,7 +114,14 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
         super.onCreate(savedInstanceState);
         contentProviderUtils = new ContentProviderUtils(this);
 
-        trackId = getIntent().getParcelableExtra(EXTRA_TRACK_ID);
+        Intent intent = getIntent();
+        if (intent == null || !intent.hasExtra(EXTRA_TRACK_ID)) {
+            Log.e(TAG, "Intent or EXTRA_TRACK_ID is missing.");
+            finish();
+            return;
+        }
+
+        trackId = intent.getParcelableExtra(EXTRA_TRACK_ID);
         if (trackId == null) {
             throw new RuntimeException("TrackId is mandatory");
         }
@@ -151,6 +158,7 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
 
         setSupportActionBar(viewBinding.bottomAppBar);
     }
+
 
     @Override
     public void onAttachedToWindow() {
