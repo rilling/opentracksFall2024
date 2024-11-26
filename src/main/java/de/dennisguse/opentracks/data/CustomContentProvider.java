@@ -278,10 +278,30 @@ public class CustomContentProvider extends ContentProvider {
             }
             default -> throw new IllegalArgumentException("Unknown url " + url);
         }
-        Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+
+        Cursor cursor = queryBuilder.query(db, projection, sanitizeInput(selection), selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), url);
         return cursor;
     }
+
+    /**
+     * This method does a basic sanitization of the selection sql input
+     * @param input Unsanitized SQL selection input
+     * @return sanitized string free of sql injection
+     */
+    public static String sanitizeInput(String input) {
+        if (input == null) {
+            return null;
+        }
+        input = input.trim();
+        input = input.replace("'", "''")
+                .replace("\\", "\\\\")
+                .replace(";", "")
+                .replace("--", "");
+
+        return input;
+    }
+
 
     @Override
     public int update(@NonNull Uri url, ContentValues values, String where, String[] selectionArgs) {
