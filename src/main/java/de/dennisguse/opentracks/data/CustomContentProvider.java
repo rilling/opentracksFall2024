@@ -60,39 +60,43 @@ public class CustomContentProvider extends ContentProvider {
 
     private SQLiteDatabase db;
 
+    // Helper method to generate the SQL sub-query for each sensor type
+    private String generateSensorStatsSubQuery(String sensorColumn, String avgAlias, String maxAlias) {
+        return "SUM(t." + sensorColumn + " * (COALESCE(MAX(t." + TrackPointsColumns.TIME +
+                ", (SELECT time_value FROM time_select)), t." + TrackPointsColumns.TIME + ") - t." +
+                TrackPointsColumns.TIME + ")) / SUM(COALESCE(MAX(t." + TrackPointsColumns.TIME +
+                ", (SELECT time_value FROM time_select)), t." + TrackPointsColumns.TIME + ") - t." +
+                TrackPointsColumns.TIME + ") " + avgAlias + ", " +
+                "MAX(t." + sensorColumn + ") " + maxAlias;
+    }
+
     /**
      * The string representing the query that compute sensor stats from trackpoints table.
      * It computes the average for heart rate, cadence and power (duration-based average) and the maximum for heart rate, cadence and power.
      * Finally, it ignores manual pause (SEGMENT_START_MANUAL).
      */
     private final String SENSOR_STATS_QUERY =
-            "WITH time_select as " +
-                "(SELECT t1." + TrackPointsColumns.TIME + " * (t1." + TrackPointsColumns.TYPE + " NOT IN (" + TrackPoint.Type.SEGMENT_START_MANUAL.type_db + ")) time_value " +
-                "FROM " + TrackPointsColumns.TABLE_NAME + " t1 " +
-                "WHERE t1." + TrackPointsColumns._ID + " > t." + TrackPointsColumns._ID + " AND t1." + TrackPointsColumns.TRACKID + " = ? ORDER BY _id LIMIT 1) " +
+            "WITH time_select AS " +
+                    "(SELECT t1." + TrackPointsColumns.TIME + " * (t1." + TrackPointsColumns.TYPE +
+                    " NOT IN (" + TrackPoint.Type.SEGMENT_START_MANUAL.type_db + ")) time_value " +
+                    "FROM " + TrackPointsColumns.TABLE_NAME + " t1 " +
+                    "WHERE t1." + TrackPointsColumns._ID + " > t." + TrackPointsColumns._ID +
+                    " AND t1." + TrackPointsColumns.TRACKID + " = ? ORDER BY _id LIMIT 1) " +
 
-            "SELECT " +
-                "SUM(t." + TrackPointsColumns.SENSOR_HEARTRATE + " * (COALESCE(MAX(t." + TrackPointsColumns.TIME + ", (SELECT time_value FROM time_select)), t." + TrackPointsColumns.TIME + ") - t." + TrackPointsColumns.TIME + ")) " +
-                "/ " +
-                "SUM(COALESCE(MAX(t." + TrackPointsColumns.TIME + ", (SELECT time_value FROM time_select)), t." + TrackPointsColumns.TIME + ") - t." + TrackPointsColumns.TIME + ") " + TrackPointsColumns.ALIAS_AVG_HR + ", " +
+                    "SELECT " +
+                    generateSensorStatsSubQuery(TrackPointsColumns.SENSOR_HEARTRATE,
+                            TrackPointsColumns.ALIAS_AVG_HR,
+                            TrackPointsColumns.ALIAS_MAX_HR) + ", " +
+                    generateSensorStatsSubQuery(TrackPointsColumns.SENSOR_CADENCE,
+                            TrackPointsColumns.ALIAS_AVG_CADENCE,
+                            TrackPointsColumns.ALIAS_MAX_CADENCE) + ", " +
+                    generateSensorStatsSubQuery(TrackPointsColumns.SENSOR_POWER,
+                            TrackPointsColumns.ALIAS_AVG_POWER,
+                            TrackPointsColumns.ALIAS_MAX_POWER) + " " +
 
-                "MAX(t." + TrackPointsColumns.SENSOR_HEARTRATE + ") " + TrackPointsColumns.ALIAS_MAX_HR + ", " +
-
-                "SUM(t." + TrackPointsColumns.SENSOR_CADENCE + " * (COALESCE(MAX(t." + TrackPointsColumns.TIME + ", (SELECT time_value FROM time_select)), t." + TrackPointsColumns.TIME + ") - t." + TrackPointsColumns.TIME + ")) " +
-                "/ " +
-                "SUM(COALESCE(MAX(t." + TrackPointsColumns.TIME + ", (SELECT time_value FROM time_select)), t." + TrackPointsColumns.TIME + ") - t." + TrackPointsColumns.TIME + ") " + TrackPointsColumns.ALIAS_AVG_CADENCE + ", " +
-
-                "MAX(t." + TrackPointsColumns.SENSOR_CADENCE + ") " + TrackPointsColumns.ALIAS_MAX_CADENCE + ", " +
-
-                "SUM(t." + TrackPointsColumns.SENSOR_POWER + " * (COALESCE(MAX(t." + TrackPointsColumns.TIME + ", (SELECT time_value FROM time_select)), t." + TrackPointsColumns.TIME + ") - t." + TrackPointsColumns.TIME + ")) " +
-                "/ " +
-                "SUM(COALESCE(MAX(t." + TrackPointsColumns.TIME + ", (SELECT time_value FROM time_select)), t." + TrackPointsColumns.TIME + ") - t." + TrackPointsColumns.TIME + ") " + TrackPointsColumns.ALIAS_AVG_POWER + ", " +
-
-                "MAX(t." + TrackPointsColumns.SENSOR_POWER + ") " + TrackPointsColumns.ALIAS_MAX_POWER + " " +
-
-            "FROM " + TrackPointsColumns.TABLE_NAME + " t " +
-            "WHERE t." + TrackPointsColumns.TRACKID + " = ? " +
-            "AND t." + TrackPointsColumns.TYPE + " NOT IN (" + TrackPoint.Type.SEGMENT_START_MANUAL.type_db + ")";
+                    "FROM " + TrackPointsColumns.TABLE_NAME + " t " +
+                    "WHERE t." + TrackPointsColumns.TRACKID + " = ? " +
+                    "AND t." + TrackPointsColumns.TYPE + " NOT IN (" + TrackPoint.Type.SEGMENT_START_MANUAL.type_db + ")";
 
     public CustomContentProvider() {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);

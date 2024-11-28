@@ -510,41 +510,7 @@ public class PreferencesUtils {
 
     static String[] getMaxRecordingDistanceEntries() {
         String[] entryValues = resources.getStringArray(R.array.max_recording_distance_values);
-        String[] entries = new String[entryValues.length];
-
-        final int maxRecordingDistanceDefault = Integer.parseInt(resources.getString(R.string.max_recording_distance_default));
-        UnitSystem unitSystem = getUnitSystem();
-
-        DistanceFormatter formatter = DistanceFormatter.Builder()
-                .setDecimalCount(0)
-                .setThreshold(Double.MAX_VALUE)
-                .setUnit(unitSystem)
-                .build(resources);
-        for (int i = 0; i < entryValues.length; i++) {
-            int value = Integer.parseInt(entryValues[i]);
-            Distance distance = Distance.of(1).multipliedBy(value);
-
-            String displayValue = formatter.formatDistance(distance);
-            switch (unitSystem) {
-                case METRIC, IMPERIAL_METER -> {
-                    if (value == maxRecordingDistanceDefault) {
-                        entries[i] = resources.getString(R.string.value_integer_meter_recommended, value);
-                    } else {
-                        entries[i] = displayValue;
-                    }
-                }
-                case IMPERIAL_FEET, NAUTICAL_IMPERIAL -> {
-                    if (value == maxRecordingDistanceDefault) {
-                        entries[i] = resources.getString(R.string.value_integer_feet_recommended, (int) distance.toFT());
-                    } else {
-                        entries[i] = displayValue;
-                    }
-                }
-                default -> throw new RuntimeException("Not implemented");
-            }
-        }
-
-        return entries;
+        return getEntries(entryValues, Integer.parseInt(resources.getString(R.string.max_recording_distance_default)), String.valueOf(R.string.max_recording_distance_default), null, null);
     }
 
     public static Duration getMinSamplingInterval() {
@@ -580,12 +546,12 @@ public class PreferencesUtils {
 
     static String[] getThresholdHorizontalAccuracyEntries() {
         String[] entryValues = resources.getStringArray(R.array.recording_gps_accuracy_values);
+        return getEntries(entryValues, Integer.parseInt(resources.getString(R.string.recording_gps_accuracy_default)), String.valueOf(R.string.recording_gps_accuracy_default), String.valueOf(R.string.recording_gps_accuracy_excellent), String.valueOf(R.string.recording_gps_accuracy_poor));
+    }
+
+    private static String[] getEntries(String[] entryValues, int defaultValue, String defaultKey, String excellentKey, String poorKey) {
         String[] entries = new String[entryValues.length];
-
-        final int recordingGPSAccuracyDefault = Integer.parseInt(resources.getString(R.string.recording_gps_accuracy_default));
-        final int recordingGPSAccuracyExcellent = Integer.parseInt(resources.getString(R.string.recording_gps_accuracy_excellent));
-        final int recordingGPSAccuracyPoor = Integer.parseInt(resources.getString(R.string.recording_gps_accuracy_poor));
-
+        final int defaultValueInt = Integer.parseInt(resources.getString(Integer.parseInt(defaultKey)));
         UnitSystem unitSystem = getUnitSystem();
 
         DistanceFormatter formatter = DistanceFormatter.Builder()
@@ -601,20 +567,20 @@ public class PreferencesUtils {
             String displayValue = formatter.formatDistance(distance);
             switch (unitSystem) {
                 case METRIC, IMPERIAL_METER -> {
-                    if (value == recordingGPSAccuracyDefault) {
+                    if (value == defaultValueInt) {
                         entries[i] = resources.getString(R.string.value_integer_meter_recommended, value);
-                    } else if (value == recordingGPSAccuracyExcellent) {
+                    } else if (value == Integer.parseInt(resources.getString(Integer.parseInt(excellentKey)))) {
                         entries[i] = resources.getString(R.string.value_integer_meter_excellent_gps, value);
-                    } else if (value == recordingGPSAccuracyPoor) {
+                    } else if (value == Integer.parseInt(resources.getString(Integer.parseInt(poorKey)))) {
                         entries[i] = resources.getString(R.string.value_integer_meter_poor_gps, value);
                     } else {
                         entries[i] = displayValue;
                     }
                 }
                 case IMPERIAL_FEET, NAUTICAL_IMPERIAL -> {
-                    if (value == recordingGPSAccuracyDefault) {
+                    if (value == defaultValueInt) {
                         entries[i] = resources.getString(R.string.value_integer_feet_recommended, (int) distance.toFT());
-                    } else if (value == recordingGPSAccuracyExcellent) {
+                    } else if (value == Integer.parseInt(resources.getString(Integer.parseInt(excellentKey)))) {
                         entries[i] = resources.getString(R.string.value_integer_feet_excellent_gps, (int) distance.toFT());
                     } else {
                         entries[i] = displayValue;

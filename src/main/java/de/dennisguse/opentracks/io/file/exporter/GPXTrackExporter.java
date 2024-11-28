@@ -54,28 +54,19 @@ public class GPXTrackExporter implements TrackExporter {
 
     private static final String TAG = GPXTrackExporter.class.getSimpleName();
 
-    private static final NumberFormat ALTITUDE_FORMAT = NumberFormat.getInstance(Locale.US);
-    private static final NumberFormat COORDINATE_FORMAT = NumberFormat.getInstance(Locale.US);
-    private static final NumberFormat SPEED_FORMAT = NumberFormat.getInstance(Locale.US);
-    private static final NumberFormat DISTANCE_FORMAT = NumberFormat.getInstance(Locale.US);
-    private static final NumberFormat HEARTRATE_FORMAT = NumberFormat.getInstance(Locale.US);
-    private static final NumberFormat CADENCE_FORMAT = NumberFormat.getInstance(Locale.US);
-    private static final NumberFormat POWER_FORMAT = NumberFormat.getInstance(Locale.US);
+    private static final NumberFormat ALTITUDE_FORMAT = NumberFormatUtils.ALTITUDE_FORMAT;
+    private static final NumberFormat COORDINATE_FORMAT = NumberFormatUtils.COORDINATE_FORMAT;
+    private static final NumberFormat SPEED_FORMAT = NumberFormatUtils.SPEED_FORMAT;
+    private static final NumberFormat DISTANCE_FORMAT = NumberFormatUtils.DISTANCE_FORMAT;
+    private static final NumberFormat HEARTRATE_FORMAT = NumberFormatUtils.HEARTRATE_FORMAT;
+    private static final NumberFormat CADENCE_FORMAT = NumberFormatUtils.CADENCE_FORMAT;
+    private static final NumberFormat POWER_FORMAT = NumberFormatUtils.POWER_FORMAT;
 
     static {
         /*
          * GPX readers expect to see fractional numbers with US-style punctuation.
          * That is, they want periods for decimal points, rather than commas.
          */
-        ALTITUDE_FORMAT.setMaximumFractionDigits(1);
-        ALTITUDE_FORMAT.setGroupingUsed(false);
-
-        COORDINATE_FORMAT.setMaximumFractionDigits(6);
-        COORDINATE_FORMAT.setMaximumIntegerDigits(3);
-        COORDINATE_FORMAT.setGroupingUsed(false);
-
-        SPEED_FORMAT.setMaximumFractionDigits(2);
-        SPEED_FORMAT.setGroupingUsed(false);
 
         HEARTRATE_FORMAT.setMaximumFractionDigits(0);
         HEARTRATE_FORMAT.setGroupingUsed(false);
