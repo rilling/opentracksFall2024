@@ -10,6 +10,7 @@ import com.google.android.material.color.DynamicColors;
 
 import java.lang.reflect.Method;
 
+import de.dennisguse.opentracks.io.file.importer.ParsingException;
 import de.dennisguse.opentracks.settings.PreferencesUtils;
 import de.dennisguse.opentracks.util.ExceptionHandler;
 
@@ -63,8 +64,9 @@ public class Startup extends Application {
                 Class<?> activityThread = Class.forName("android.app.ActivityThread");
                 @SuppressLint("DiscouragedPrivateApi") Method getProcessName = activityThread.getDeclaredMethod("currentProcessName");
                 processName = (String) getProcessName.invoke(null);
-            } catch (Exception ignored) {
-                Log.e("Exception", ignored.toString());
+            } catch (Exception e) {
+                Log.e("Exception", e.toString());
+                return false;
             }
         } else {
             processName = Application.getProcessName();
