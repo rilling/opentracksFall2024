@@ -11,10 +11,7 @@ buildscript {
 
 }
 
-plugins {
-    id "org.sonarqube" version "5.1.0.4882"
-    id "pmd"
-}
+
 apply plugin: 'com.android.application'
 
 allprojects {
@@ -23,6 +20,7 @@ allprojects {
         mavenCentral()
     }
 }
+
 
 
 apply plugin: 'com.android.application'
@@ -161,49 +159,3 @@ dependencies {
 
 }
 
-
-apply plugin: 'pmd'
-
-pmd {
-    toolVersion = '6.55.0'
-    consoleOutput = true
-    ignoreFailures = true
-}
-
-dependencies {
-    pmd 'net.sourceforge.pmd:pmd-core:6.55.0'
-    pmd 'net.sourceforge.pmd:pmd-java:6.55.0'
-}
-
-task cpd {
-    doLast {
-        // Create directories first
-        def reportsDir = new File("${buildDir}/reports/cpd")
-        reportsDir.mkdirs()
-
-        ant.taskdef(name: 'cpd',
-                classname: 'net.sourceforge.pmd.cpd.CPDTask',
-                classpath: configurations.pmd.asPath)
-
-        ant.cpd(minimumTokenCount: '100',
-                format: 'xml',
-                outputFile: "${buildDir}/reports/cpd/cpd.xml") {
-            fileset(dir: "src/main/java/de/dennisguse/opentracks") {
-                include(name: "**/*.java")
-                exclude(name: "**/R.java")
-                exclude(name: "**/BuildConfig.java")
-            }
-        }
-    }
-}
-
-task cpdHtml {
-    dependsOn cpd
-    doLast {
-        ant.xslt(
-                in: "${buildDir}/reports/cpd/cpd.xml",
-                style: "${project.rootDir}/config/pmd/cpdhtml.xslt",
-                out: "${buildDir}/reports/cpd/cpd.html"
-        )
-    }
-}
