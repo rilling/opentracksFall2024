@@ -275,7 +275,7 @@ public class MarkerEditActivity extends AbstractActivity {
         Pair<Intent, Uri> intentAndPhotoUri = MarkerUtils.createTakePictureIntent(this, getTrackId());
         cameraPhotoUri = intentAndPhotoUri.second;
 
-        // Validate the URI to ensure it is safe
+        // Validate the URI to ensure it's a safe path and not vulnerable to path traversal
         if (!isValidPath(cameraPhotoUri)) {
             Toast.makeText(this, "Invalid photo path.", Toast.LENGTH_LONG).show();
             return;
@@ -294,15 +294,18 @@ public class MarkerEditActivity extends AbstractActivity {
     private boolean isValidPath(Uri uri) {
         if (uri == null) return false;
 
+        // Here you ensure the path is within the app's secure directory
         File appDir = new File(getApplicationContext().getFilesDir(), "safe_directory");
         File targetFile = new File(uri.getPath());
         try {
+            // Ensure the canonical path starts with the app's directory path to prevent path traversal
             return targetFile.getCanonicalPath().startsWith(appDir.getCanonicalPath());
         } catch (IOException e) {
             Log.e(TAG, "Invalid path: " + e.getMessage());
             return false;
         }
     }
+
 
     private void createMarkerWithGalleryImage() {
         PickVisualMediaRequest request = new PickVisualMediaRequest.Builder()
