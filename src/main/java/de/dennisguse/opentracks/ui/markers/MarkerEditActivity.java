@@ -40,6 +40,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.time.Instant;
@@ -274,10 +275,32 @@ public class MarkerEditActivity extends AbstractActivity {
         Pair<Intent, Uri> intentAndPhotoUri = MarkerUtils.createTakePictureIntent(this, getTrackId());
         cameraPhotoUri = intentAndPhotoUri.second;
 
+        // Validate the URI to ensure it is safe
+        if (!isValidPath(cameraPhotoUri)) {
+            Toast.makeText(this, "Invalid photo path.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         try {
             takePictureFromCamera.launch(intentAndPhotoUri.first);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(this, R.string.no_compatible_camera_installed, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Validates if the URI path is within the app's storage directory.
+     */
+    private boolean isValidPath(Uri uri) {
+        if (uri == null) return false;
+
+        File appDir = new File(getApplicationContext().getFilesDir(), "safe_directory");
+        File targetFile = new File(uri.getPath());
+        try {
+            return targetFile.getCanonicalPath().startsWith(appDir.getCanonicalPath());
+        } catch (IOException e) {
+            Log.e(TAG, "Invalid path: " + e.getMessage());
+            return false;
         }
     }
 
