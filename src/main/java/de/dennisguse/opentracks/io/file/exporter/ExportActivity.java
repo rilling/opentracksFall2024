@@ -155,49 +155,42 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
 
         setSupportActionBar(viewBinding.bottomAppBarLayout.bottomAppBar);
 
-        // Retrieve the URI from the Intent
+        // Retrieve and validate the directory URI
         directoryUri = getIntent().getParcelableExtra(EXTRA_DIRECTORY_URI_KEY);
-
         if (directoryUri == null) {
             throw new IllegalArgumentException("Directory URI cannot be null");
         }
 
-        // Ensure we do not directly use directoryUri in SQL queries without sanitization
-        String directoryUriPath = directoryUri.getPath();  // Get the path part of the URI
+        // Sanitize and validate the directory URI
+        String sanitizedDirectoryPath = sanitizeUri(directoryUri);
 
-        // Assuming this path is later used in a query, you should sanitize it before using it in SQL.
-        // For example, extracting directory name or segments.
-        String directoryName = sanitizeDirectoryUri(directoryUriPath);
+        // Retrieve other Intent extras
+        trackFileFormat = (TrackFileFormat) getIntent().getSerializableExtra(EXTRA_TRACKFILEFORMAT_KEY);
+        boolean allInOneFile = getIntent().getBooleanExtra(EXTRA_ONE_FILE_KEY, false);
 
-        // Assuming you are querying a content provider or a local database with directoryName
-        // Example of parameterized query
-        Cursor cursor = getContentResolver().query(
-                YOUR_CONTENT_URI,
-                projection,
-                "column_name = ?",
-                new String[]{directoryName},  // Parameterized input, not concatenating directly into SQL
-                null
-        );
+        contentProviderUtils = new ContentProviderUtils(this);
 
-        // Do your work with the cursor
-        // Example of file processing
+        // Use sanitizedDirectoryPath for safe file handling
         DocumentFile documentFile = DocumentFile.fromTreeUri(this, directoryUri);
         String directoryDisplayName = FileUtils.getPath(documentFile);
 
-        contentProviderUtils = new ContentProviderUtils(this);
         resultReceiver = new ExportService.ExportServiceResultReceiver(new Handler(), this);
 
         if (savedInstanceState == null) {
             autoConflict = ConflictResolutionStrategy.CONFLICT_NONE;
             setProgress();
+
+            // Run file operations on a background thread
             new Thread(() -> {
+                // Securely retrieve all files
                 directoryFiles = ExportUtils.getAllFiles(ExportActivity.this, documentFile.getUri());
                 runOnUiThread(() -> {
-                    createExportTasks(true);
+                    createExportTasks(allInOneFile);
                     nextExport(null);
                 });
             }).start();
         } else {
+            // Restore the saved instance state
             autoConflict = ConflictResolutionStrategy.valueOf(savedInstanceState.getString(BUNDLE_AUTO_CONFLICT));
             trackExportSuccessCount = savedInstanceState.getInt(BUNDLE_SUCCESS_COUNT);
             trackExportErrorCount = savedInstanceState.getInt(BUNDLE_ERROR_COUNT);
@@ -213,21 +206,16 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
 
         viewBinding.exportActivityToolbar.setTitle(getString(R.string.export_progress_message, directoryDisplayName));
     }
-
-    /**
-     * Sanitize the directory URI path to remove potential harmful characters for SQL queries.
-     * @param directoryUriPath the path part of the URI to sanitize
-     * @return the sanitized path
-     */
-    private String sanitizeDirectoryUri(String directoryUriPath) {
-        // You can apply your own sanitization rules, like removing unsafe characters.
-        if (directoryUriPath != null) {
-            // For example, remove any semicolons or other characters that might interfere with SQL syntax
-            return directoryUriPath.replace(";", "").replace("--", "");
+    private String sanitizeUri(Uri uri) {
+        if (uri == null) {
+            throw new IllegalArgumentException("URI cannot be null");
         }
-        return directoryUriPath;
+        String path = uri.getPath();
+        if (path == null || path.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid URI path");
+        }
+        return Uri.encode(path.trim()); // Encode the URI path
     }
-
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
