@@ -168,39 +168,57 @@ public class TrackRecordedActivity extends AbstractTrackDeleteActivity implement
     }
 
     @Override
-
-    private static boolean handleMenuActions(Context context, int itemId, Track.Id trackId) {
-        if (itemId == R.id.track_detail_show_on_map) {
-            IntentDashboardUtils.showTrackOnMap(context, false, trackId);
-            return true;
-        }
-        if (itemId == R.id.track_detail_markers) {
-            Intent intent = IntentUtils.newIntent(context, MarkerListActivity.class)
-                    .putExtra(MarkerListActivity.EXTRA_TRACK_ID, trackId);
-            context.startActivity(intent);
-            return true;
-        }
-        if (itemId == R.id.track_detail_edit) {
-            Intent intent = IntentUtils.newIntent(context, TrackEditActivity.class)
-                    .putExtra(TrackEditActivity.EXTRA_TRACK_ID, trackId);
-            context.startActivity(intent);
-            return true;
-        }
-        if (itemId == R.id.track_detail_delete) {
-            // Handle delete action here.
-            return true;
-        }
-        return false;
-    }
-
-    // Inside onOptionsItemSelected in TrackRecordingActivity (Refactored)
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (handleMenuActions(this, item.getItemId(), trackId)) {
+        if (item.getItemId() == R.id.track_detail_share) {
+            Intent intent = Intent.createChooser(ShareUtils.newShareFileIntent(this, trackId), null);
+            startActivity(intent);
             return true;
         }
 
-        // Rest of the onOptionsItemSelected code remains the same
+        if (item.getItemId() == R.id.track_detail_menu_show_on_map) {
+            IntentDashboardUtils.showTrackOnMap(this, false, trackId);
+            return true;
+        }
+
+        if (item.getItemId() == R.id.track_detail_markers) {
+            Intent intent = IntentUtils.newIntent(this, MarkerListActivity.class)
+                    .putExtra(MarkerListActivity.EXTRA_TRACK_ID, trackId);
+            startActivity(intent);
+            return true;
+        }
+
+        if (item.getItemId() == R.id.track_detail_edit) {
+            Intent intent = IntentUtils.newIntent(this, TrackEditActivity.class)
+                    .putExtra(TrackEditActivity.EXTRA_TRACK_ID, trackId);
+            startActivity(intent);
+            return true;
+        }
+
+        if (item.getItemId() == R.id.track_detail_delete) {
+            deleteTracks(trackId);
+            return true;
+        }
+
+        if (item.getItemId() == R.id.track_detail_resume_track) {
+            TrackRecordingServiceConnection.executeForeground(this, (service, connection) -> {
+                service.resumeTrack(trackId);
+
+                Intent newIntent = IntentUtils.newIntent(TrackRecordedActivity.this, TrackRecordingActivity.class)
+                        .putExtra(TrackRecordingActivity.EXTRA_TRACK_ID, trackId);
+                startActivity(newIntent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+
+                finish();
+            });
+            return true;
+        }
+
+        if (item.getItemId() == R.id.track_detail_settings) {
+            startActivity(IntentUtils.newIntent(this, SettingsActivity.class));
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Nullable
