@@ -169,6 +169,17 @@ public class TrackRecordedActivity extends AbstractTrackDeleteActivity implement
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent checkIntent = getIntent();
+        if (checkIntent == null) {
+            Log.e("TrackRecordedActivity", "Invalid or missing trackId");
+            return false;
+        }
+        String trackIdcheck = checkIntent.getStringExtra("trackId");
+        if (trackIdcheck == null || trackIdcheck.equals("")) {
+            Log.e("TrackRecordedActivity", "Invalid or malformed trackId");
+            return false;
+        }
+
         if (item.getItemId() == R.id.track_detail_share) {
             Intent intent = Intent.createChooser(ShareUtils.newShareFileIntent(this, trackId), null);
             startActivity(intent);
