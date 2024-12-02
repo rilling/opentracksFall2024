@@ -206,14 +206,15 @@ public class TrackRecordingService extends Service implements TrackPointCreator.
     }
 
     private synchronized void startSensors() {
-        if (isSensorStarted()) {
-            Log.i(TAG, "sensors already started; skipping");
-            return;
+        synchronized (this) {
+            if (isSensorStarted()) {
+                Log.i(TAG, "sensors already started; skipping");
+                return;
+            }
+            Log.i(TAG, "startSensors");
+            wakeLock = SystemUtils.acquireWakeLock(this, wakeLock);
+            trackPointCreator.start(this, handler);
         }
-        Log.i(TAG, "startSensors");
-        wakeLock = SystemUtils.acquireWakeLock(this, wakeLock);
-        trackPointCreator.start(this, handler);
-
         ServiceCompat.startForeground(this, TrackRecordingServiceNotificationManager.NOTIFICATION_ID, notificationManager.setGPSonlyStarted(this), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION + ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
     }
 
@@ -330,9 +331,10 @@ public class TrackRecordingService extends Service implements TrackPointCreator.
         return recordingStatus.isRecording();
     }
 
-    private boolean isSensorStarted() {
+    private synchronized boolean isSensorStarted() {
         return wakeLock != null;
     }
+
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
