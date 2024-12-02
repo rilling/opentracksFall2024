@@ -60,6 +60,7 @@ public class TrackEditActivity extends AbstractActivity implements ChooseActivit
             return;
         }
 
+
         contentProviderUtils = new ContentProviderUtils(this);
         Track track = contentProviderUtils.getTrack(trackId);
         if (track == null) {
