@@ -199,6 +199,16 @@ public class TrackRecordedActivity extends AbstractTrackDeleteActivity implement
         }
 
         if (item.getItemId() == R.id.track_detail_edit) {
+            Intent verifyIntent = getIntent();
+            if (verifyIntent == null) {
+                Log.e("TrackRecordedActivity", "Invalid or missing trackId");
+                return false;
+            }
+            String trackIdverify = checkIntent.getStringExtra("trackId");
+            if (trackIdverify == null || trackIdverify.equals("")) {
+                Log.e("TrackRecordedActivity", "Invalid or malformed trackId");
+                return false;
+            }
             Intent intent = IntentUtils.newIntent(this, TrackEditActivity.class)
                     .putExtra(TrackEditActivity.EXTRA_TRACK_ID, trackId);
             startActivity(intent);
