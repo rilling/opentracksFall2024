@@ -54,6 +54,7 @@ public class TrackEditActivity extends AbstractActivity implements ChooseActivit
 
         Track.Id trackId = getIntent().getParcelableExtra(EXTRA_TRACK_ID);
 
+
         if (trackId == null) {
             Log.e(TAG, "invalid trackId");
             finish();
