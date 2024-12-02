@@ -1,6 +1,7 @@
 package de.dennisguse.opentracks;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Build;
@@ -263,56 +264,32 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
         return super.onCreateOptionsMenu(menu);
     }
 
+
+    // Helper method to handle menu actions (Refactored)
+    private static boolean handleMenuActions(Context context, int itemId, Track.Id trackId) {
+        if (itemId == R.id.track_detail_show_on_map) {
+            IntentDashboardUtils.showTrackOnMap(context, false, trackId);
+            return true;
+        }
+        if (itemId == R.id.track_detail_markers) {
+            Intent intent = IntentUtils.newIntent(context, MarkerListActivity.class)
+                    .putExtra(MarkerListActivity.EXTRA_TRACK_ID, trackId);
+            context.startActivity(intent);
+            return true;
+        }
+        if (itemId == R.id.track_detail_edit) {
+            Intent intent = IntentUtils.newIntent(context, TrackEditActivity.class)
+                    .putExtra(TrackEditActivity.EXTRA_TRACK_ID, trackId);
+            context.startActivity(intent);
+            return true;
+        }
+        return false;
+    }
+
+    // Inside onOptionsItemSelected in TrackRecordedActivity (Refactored)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.track_detail_menu_show_on_map) {
-            IntentDashboardUtils.showTrackOnMap(this, true, trackId);
-            return true;
-        }
-
-        if (item.getItemId() == R.id.track_detail_insert_marker) {
-            TrackPoint trackPoint = trackRecordingServiceConnection.getTrackRecordingService().getLastStoredTrackPointWithLocation();
-            if (trackPoint == null) {
-                return true;
-            }
-            Intent intent = IntentUtils
-                    .newIntent(this, MarkerEditActivity.class)
-                    .putExtra(MarkerEditActivity.EXTRA_TRACK_ID, trackId)
-                    .putExtra(MarkerEditActivity.EXTRA_LOCATION, trackPoint.getLocation());
-            startActivity(intent);
-            return true;
-        }
-
-        if (item.getItemId() == R.id.track_detail_menu_select_layout) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            List<String> layoutNames = PreferencesUtils.getAllCustomLayoutNames();
-            builder.setTitle(getString(R.string.custom_layout_select_layout)).setItems(layoutNames.toArray(new String[0]), (dialog, which) -> PreferencesUtils.setDefaultLayout(layoutNames.get(which)));
-            builder.create().show();
-            return true;
-        }
-
-        if (item.getItemId() == R.id.track_detail_markers) {
-            Intent intent = IntentUtils.newIntent(this, MarkerListActivity.class)
-                    .putExtra(MarkerListActivity.EXTRA_TRACK_ID, trackId);
-            startActivity(intent);
-            return true;
-
-        }
-
-        if (item.getItemId() == R.id.track_detail_edit) {
-            Intent intent = IntentUtils.newIntent(this, TrackEditActivity.class)
-                    .putExtra(TrackEditActivity.EXTRA_TRACK_ID, trackId);
-            startActivity(intent);
-            return true;
-        }
-
-        if (item.getItemId() == R.id.track_detail_settings) {
-            Intent intent = IntentUtils.newIntent(this, SettingsActivity.class);
-            startActivity(intent);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        return  handleMenuActions(this, item.getItemId(), trackId);
     }
 
     /**

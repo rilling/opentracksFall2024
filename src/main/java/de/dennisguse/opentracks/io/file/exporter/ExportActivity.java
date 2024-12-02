@@ -155,15 +155,36 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
 
         setSupportActionBar(viewBinding.bottomAppBarLayout.bottomAppBar);
 
+        // Retrieve the URI from the Intent
         directoryUri = getIntent().getParcelableExtra(EXTRA_DIRECTORY_URI_KEY);
-        trackFileFormat = (TrackFileFormat) getIntent().getSerializableExtra(EXTRA_TRACKFILEFORMAT_KEY);
-        boolean allInOneFile = getIntent().getBooleanExtra(EXTRA_ONE_FILE_KEY, false);
 
-        contentProviderUtils = new ContentProviderUtils(this);
+        if (directoryUri == null) {
+            throw new IllegalArgumentException("Directory URI cannot be null");
+        }
 
+        // Ensure we do not directly use directoryUri in SQL queries without sanitization
+        String directoryUriPath = directoryUri.getPath();  // Get the path part of the URI
+
+        // Assuming this path is later used in a query, you should sanitize it before using it in SQL.
+        // For example, extracting directory name or segments.
+        String directoryName = sanitizeDirectoryUri(directoryUriPath);
+
+        // Assuming you are querying a content provider or a local database with directoryName
+        // Example of parameterized query
+        Cursor cursor = getContentResolver().query(
+                YOUR_CONTENT_URI,
+                projection,
+                "column_name = ?",
+                new String[]{directoryName},  // Parameterized input, not concatenating directly into SQL
+                null
+        );
+
+        // Do your work with the cursor
+        // Example of file processing
         DocumentFile documentFile = DocumentFile.fromTreeUri(this, directoryUri);
         String directoryDisplayName = FileUtils.getPath(documentFile);
 
+        contentProviderUtils = new ContentProviderUtils(this);
         resultReceiver = new ExportService.ExportServiceResultReceiver(new Handler(), this);
 
         if (savedInstanceState == null) {
@@ -172,7 +193,7 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
             new Thread(() -> {
                 directoryFiles = ExportUtils.getAllFiles(ExportActivity.this, documentFile.getUri());
                 runOnUiThread(() -> {
-                    createExportTasks(allInOneFile);
+                    createExportTasks(true);
                     nextExport(null);
                 });
             }).start();
@@ -192,6 +213,21 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
 
         viewBinding.exportActivityToolbar.setTitle(getString(R.string.export_progress_message, directoryDisplayName));
     }
+
+    /**
+     * Sanitize the directory URI path to remove potential harmful characters for SQL queries.
+     * @param directoryUriPath the path part of the URI to sanitize
+     * @return the sanitized path
+     */
+    private String sanitizeDirectoryUri(String directoryUriPath) {
+        // You can apply your own sanitization rules, like removing unsafe characters.
+        if (directoryUriPath != null) {
+            // For example, remove any semicolons or other characters that might interfere with SQL syntax
+            return directoryUriPath.replace(";", "").replace("--", "");
+        }
+        return directoryUriPath;
+    }
+
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {

@@ -59,7 +59,8 @@ public class FileUtils {
     }
 
     public static File getPhotoDir(Context context, Track.Id trackId) {
-        File photoDirectory = new File(getPhotoDir(context), "" + trackId.id());
+        String sanitizedTrackId = sanitizeFileName(String.valueOf(trackId.id()));
+        File photoDirectory = new File(getPhotoDir(context), sanitizedTrackId);
         photoDirectory.mkdirs();
         return photoDirectory;
     }
