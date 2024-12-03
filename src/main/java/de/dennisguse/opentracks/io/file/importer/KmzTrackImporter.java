@@ -227,7 +227,7 @@ public class KmzTrackImporter {
         String sanitizedFileName = fileName.replaceAll("\\.\\./", "");  // Remove any "../" sequence
 
         // Optionally, you can restrict the file name to alphanumeric characters or safe symbols
-        sanitizedFileName = sanitizedFileName.replaceAll("[^a-zA-Z0-9\\-_\\.]", "_");
+        sanitizedFileName = sanitizedFileName.replaceAll("[^a-zA-Z0-9\\-\\.]", "");
 
         return sanitizedFileName;
     }
@@ -264,4 +264,4 @@ public class KmzTrackImporter {
             }
         }
     }
-}
+}// end of the path traversal refactor.
