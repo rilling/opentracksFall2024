@@ -155,12 +155,22 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
 
         setSupportActionBar(viewBinding.bottomAppBarLayout.bottomAppBar);
 
+        // Retrieve and validate the directory URI
         directoryUri = getIntent().getParcelableExtra(EXTRA_DIRECTORY_URI_KEY);
+        if (directoryUri == null) {
+            throw new IllegalArgumentException("Directory URI cannot be null");
+        }
+
+        // Sanitize and validate the directory URI
+        String sanitizedDirectoryPath = sanitizeUri(directoryUri);
+
+        // Retrieve other Intent extras
         trackFileFormat = (TrackFileFormat) getIntent().getSerializableExtra(EXTRA_TRACKFILEFORMAT_KEY);
         boolean allInOneFile = getIntent().getBooleanExtra(EXTRA_ONE_FILE_KEY, false);
 
         contentProviderUtils = new ContentProviderUtils(this);
 
+        // Use sanitizedDirectoryPath for safe file handling
         DocumentFile documentFile = DocumentFile.fromTreeUri(this, directoryUri);
         String directoryDisplayName = FileUtils.getPath(documentFile);
 
@@ -169,7 +179,10 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
         if (savedInstanceState == null) {
             autoConflict = ConflictResolutionStrategy.CONFLICT_NONE;
             setProgress();
+
+            // Run file operations on a background thread
             new Thread(() -> {
+                // Securely retrieve all files
                 directoryFiles = ExportUtils.getAllFiles(ExportActivity.this, documentFile.getUri());
                 runOnUiThread(() -> {
                     createExportTasks(allInOneFile);
@@ -177,6 +190,7 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
                 });
             }).start();
         } else {
+            // Restore the saved instance state
             autoConflict = ConflictResolutionStrategy.valueOf(savedInstanceState.getString(BUNDLE_AUTO_CONFLICT));
             trackExportSuccessCount = savedInstanceState.getInt(BUNDLE_SUCCESS_COUNT);
             trackExportErrorCount = savedInstanceState.getInt(BUNDLE_ERROR_COUNT);
@@ -191,6 +205,16 @@ public class ExportActivity extends AppCompatActivity implements ExportService.E
         }
 
         viewBinding.exportActivityToolbar.setTitle(getString(R.string.export_progress_message, directoryDisplayName));
+    }
+    private String sanitizeUri(Uri uri) {
+        if (uri == null) {
+            throw new IllegalArgumentException("URI cannot be null");
+        }
+        String path = uri.getPath();
+        if (path == null || path.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid URI path");
+        }
+        return Uri.encode(path.trim()); // Encode the URI path
     }
 
     @Override

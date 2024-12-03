@@ -209,6 +209,8 @@ public class TrackRecordedActivity extends AbstractTrackDeleteActivity implement
                 Log.e("TrackRecordedActivity", "Invalid or malformed trackId");
                 return false;
             }
+
+
             Intent intent = IntentUtils.newIntent(this, TrackEditActivity.class)
                     .putExtra(TrackEditActivity.EXTRA_TRACK_ID, trackId);
             startActivity(intent);
