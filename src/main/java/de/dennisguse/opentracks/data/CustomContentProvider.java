@@ -309,9 +309,10 @@ public class CustomContentProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri url, ContentValues values, String where, String[] selectionArgs) {
-        // TODO Use SQLiteQueryBuilder
         String table;
-        String whereClause;
+        String whereClause = null;
+        String[] newSelectionArgs = selectionArgs;
+
         switch (getUrlType(url)) {
             case TRACKPOINTS -> {
                 table = TrackPointsColumns.TABLE_NAME;
@@ -319,10 +320,9 @@ public class CustomContentProvider extends ContentProvider {
             }
             case TRACKPOINTS_BY_ID -> {
                 table = TrackPointsColumns.TABLE_NAME;
-                whereClause = TrackPointsColumns._ID + "=" + ContentUris.parseId(url);
-                if (!TextUtils.isEmpty(where)) {
-                    whereClause += " AND (" + where + ")";
-                }
+                whereClause = TrackPointsColumns._ID + "=?";
+                long id = ContentUris.parseId(url);
+                newSelectionArgs = appendSelectionArg(selectionArgs, String.valueOf(id));
             }
             case TRACKS -> {
                 table = TracksColumns.TABLE_NAME;
@@ -330,10 +330,9 @@ public class CustomContentProvider extends ContentProvider {
             }
             case TRACKS_BY_ID -> {
                 table = TracksColumns.TABLE_NAME;
-                whereClause = TracksColumns._ID + "=" + ContentUris.parseId(url);
-                if (!TextUtils.isEmpty(where)) {
-                    whereClause += " AND (" + where + ")";
-                }
+                whereClause = TracksColumns._ID + "=?";
+                long id = ContentUris.parseId(url);
+                newSelectionArgs = appendSelectionArg(selectionArgs, String.valueOf(id));
             }
             case MARKERS -> {
                 table = MarkerColumns.TABLE_NAME;
@@ -341,17 +340,17 @@ public class CustomContentProvider extends ContentProvider {
             }
             case MARKERS_BY_ID -> {
                 table = MarkerColumns.TABLE_NAME;
-                whereClause = MarkerColumns._ID + "=" + ContentUris.parseId(url);
-                if (!TextUtils.isEmpty(where)) {
-                    whereClause += " AND (" + where + ")";
-                }
+                whereClause = MarkerColumns._ID + "=?";
+                long id = ContentUris.parseId(url);
+                newSelectionArgs = appendSelectionArg(selectionArgs, String.valueOf(id));
             }
             default -> throw new IllegalArgumentException("Unknown url " + url);
         }
+
         int count;
         try {
             db.beginTransaction();
-            count = db.update(table, values, whereClause, selectionArgs);
+            count = db.update(table, values, whereClause, newSelectionArgs);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -359,6 +358,18 @@ public class CustomContentProvider extends ContentProvider {
         getContext().getContentResolver().notifyChange(url, null, false);
         return count;
     }
+
+
+    private String[] appendSelectionArg(String[] originalArgs, String newArg) {
+        if (originalArgs == null) {
+            return new String[]{newArg};
+        }
+        String[] result = new String[originalArgs.length + 1];
+        System.arraycopy(originalArgs, 0, result, 0, originalArgs.length);
+        result[originalArgs.length] = newArg;
+        return result;
+    }
+
 
     @NonNull
     private UrlType getUrlType(Uri url) {

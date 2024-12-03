@@ -222,7 +222,15 @@ public class KmzTrackImporter {
 
         return kmlFileTrackImporter.importFile(nonClosableInputStream);
     }
+    private String sanitizeFileName(String fileName) {
+        // Remove any "../" sequences to prevent directory traversal
+        String sanitizedFileName = fileName.replaceAll("\\.\\./", "");  // Remove any "../" sequence
 
+        // Optionally, you can restrict the file name to alphanumeric characters or safe symbols
+        sanitizedFileName = sanitizedFileName.replaceAll("[^a-zA-Z0-9\\-\\.]", "");
+
+        return sanitizedFileName;
+    }
     /**
      * Reads an image file (zipInputStream) and save it in a file called fileName inside photo folder.
      *
@@ -234,6 +242,7 @@ public class KmzTrackImporter {
         if (trackId == null || fileName.isEmpty()) {
             return;
         }
+        String sanitizedFileName = sanitizeFileName(fileName);
 
         // Sanitize the file name to prevent directory traversal
         String sanitizedFileName = sanitizeFileName(fileName);
@@ -241,6 +250,7 @@ public class KmzTrackImporter {
         // Get the photo directory for this track
         File dir = FileUtils.getPhotoDir(context, trackId);
         File file = new File(dir, sanitizedFileName);
+
 
         // Ensure the file is within the intended directory (canonical path check)
         if (!file.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
