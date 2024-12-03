@@ -147,41 +147,31 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
             getBinding().statsDescriptionMain.setText(getContext().getString(R.string.stats_average_speed));
         }
     }
-
-    public static class MaxSpeed extends GenericStatisticsViewHolder {
-
-        @Override
-        public void onChanged(UnitSystem unitSystem, RecordingData data) {
-            SpeedFormatter speedFormatterSpeed = SpeedFormatter.Builder()
-                    .setUnit(unitSystem)
-                    .setReportSpeedOrPace(true)
-                    .build(getContext());
-
-            Pair<String, String> valueAndUnit = speedFormatterSpeed.getSpeedParts(data.getTrackStatistics().getMaxSpeed());
-
-            getBinding().statsValue.setText(valueAndUnit.first);
-            getBinding().statsUnit.setText(valueAndUnit.second);
-            getBinding().statsDescriptionMain.setText(getContext().getString(R.string.stats_max_speed));
-        }
-    }
-
-    private void setSpeedOrPace(UnitSystem unitSystem, RecordingData data, boolean reportSpeed, int descriptionResId) {
+    private void configureSpeedDisplay(UnitSystem unitSystem, RecordingData data, boolean reportSpeed, int descriptionResId) {
         SpeedFormatter speedFormatter = SpeedFormatter.Builder()
                 .setUnit(unitSystem)
                 .setReportSpeedOrPace(reportSpeed)
                 .build(getContext());
 
-        Pair<String, String> valueAndUnit = speedFormatter.getSpeedParts(data.getTrackStatistics().getAverageMovingSpeed());
+        Pair<String, String> valueAndUnit = speedFormatter.getSpeedParts(data.getTrackStatistics().getMaxSpeed());
 
         getBinding().statsValue.setText(valueAndUnit.first);
         getBinding().statsUnit.setText(valueAndUnit.second);
         getBinding().statsDescriptionMain.setText(getContext().getString(descriptionResId));
     }
+    public static class MaxSpeed extends GenericStatisticsViewHolder {
+        @Override
+        public void onChanged(UnitSystem unitSystem, RecordingData data) {
+            configureSpeedDisplay(unitSystem, data, true, R.string.stats_max_speed);
+        }
+    }
+
     public static class AverageMovingPace extends GenericStatisticsViewHolder {
 
         @Override
         public void onChanged(UnitSystem unitSystem, RecordingData data) {
-            setSpeedOrPace(unitSystem, data, false, R.string.stats_average_moving_pace);
+            myFunction(unitSystem, data);
+            getBinding().statsDescriptionMain.setText(getContext().getString(R.string.stats_average_moving_pace));
         }
     }
 
@@ -189,33 +179,15 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
 
         @Override
         public void onChanged(UnitSystem unitSystem, RecordingData data) {
-            SpeedFormatter speedFormatterSpeed = SpeedFormatter.Builder()
-                    .setUnit(unitSystem)
-                    .setReportSpeedOrPace(false)
-                    .build(getContext());
-
-            Pair<String, String> valueAndUnit = speedFormatterSpeed.getSpeedParts(data.getTrackStatistics().getAverageMovingSpeed());
-
-            getBinding().statsValue.setText(valueAndUnit.first);
-            getBinding().statsUnit.setText(valueAndUnit.second);
+            myFunction(unitSystem, data);
             getBinding().statsDescriptionMain.setText(getContext().getString(R.string.stats_average_pace));
         }
     }
 
     public static class FastestPace extends GenericStatisticsViewHolder {
-
         @Override
         public void onChanged(UnitSystem unitSystem, RecordingData data) {
-            SpeedFormatter speedFormatterSpeed = SpeedFormatter.Builder()
-                    .setUnit(unitSystem)
-                    .setReportSpeedOrPace(false)
-                    .build(getContext());
-
-            Pair<String, String> valueAndUnit = speedFormatterSpeed.getSpeedParts(data.getTrackStatistics().getMaxSpeed());
-
-            getBinding().statsValue.setText(valueAndUnit.first);
-            getBinding().statsUnit.setText(valueAndUnit.second);
-            getBinding().statsDescriptionMain.setText(getContext().getString(R.string.stats_fastest_pace));
+            configureSpeedDisplay(unitSystem, data, false, R.string.stats_fastest_pace);
         }
     }
 
@@ -276,5 +248,17 @@ public abstract class GenericStatisticsViewHolder extends StatisticViewHolder<St
             getBinding().statsValue.setText(value);
             getBinding().statsDescriptionMain.setText(R.string.stats_coordinates);
         }
+    }
+
+    public void myFunction (UnitSystem unitSystem, RecordingData data){
+        SpeedFormatter speedFormatterSpeed = SpeedFormatter.Builder()
+                .setUnit(unitSystem)
+                .setReportSpeedOrPace(false)
+                .build(getContext());
+
+        Pair<String, String> valueAndUnit = speedFormatterSpeed.getSpeedParts(data.getTrackStatistics().getAverageMovingSpeed());
+
+        getBinding().statsValue.setText(valueAndUnit.first);
+        getBinding().statsUnit.setText(valueAndUnit.second);
     }
 }
