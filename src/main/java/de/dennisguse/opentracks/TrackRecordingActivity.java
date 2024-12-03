@@ -1,6 +1,7 @@
 package de.dennisguse.opentracks;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Build;
@@ -271,12 +272,6 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-   package de.dennisguse.opentracks;
-
-// Import statements (unchanged)
-
-// TrackRecordedActivity class definition (unchanged)
 
     // Helper method to handle menu actions (Refactored)
     private static boolean handleMenuActions(Context context, int itemId, Track.Id trackId) {
@@ -302,11 +297,7 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
     // Inside onOptionsItemSelected in TrackRecordedActivity (Refactored)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (handleMenuActions(this, item.getItemId(), trackId)) {
-            return true;
-        }
-
-        // Rest of the onOptionsItemSelected code remains the same
+        return  handleMenuActions(this, item.getItemId(), trackId);
     }
 
     /**
