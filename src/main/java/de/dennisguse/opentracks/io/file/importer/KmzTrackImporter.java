@@ -222,7 +222,15 @@ public class KmzTrackImporter {
 
         return kmlFileTrackImporter.importFile(nonClosableInputStream);
     }
+    private String sanitizeFileName(String fileName) {
+        // Remove any "../" sequences to prevent directory traversal
+        String sanitizedFileName = fileName.replaceAll("\\.\\./", "");  // Remove any "../" sequence
 
+        // Optionally, you can restrict the file name to alphanumeric characters or safe symbols
+        sanitizedFileName = sanitizedFileName.replaceAll("[^a-zA-Z0-9\\-_\\.]", "_");
+
+        return sanitizedFileName;
+    }
     /**
      * Reads an image file (zipInputStream) and save it in a file called fileName inside photo folder.
      *
@@ -234,9 +242,15 @@ public class KmzTrackImporter {
         if (trackId == null || "".equals(fileName)) {
             return;
         }
+        String sanitizedFileName = sanitizeFileName(fileName);
 
         File dir = FileUtils.getPhotoDir(context, trackId);
-        File file = new File(dir, fileName);
+        File file = new File(dir, sanitizedFileName);
+
+        String canonicalPath = file.getCanonicalPath();
+        if (!canonicalPath.startsWith(dir.getCanonicalPath())) {
+            throw new IOException("Attempted path traversal detected.");
+        }
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
