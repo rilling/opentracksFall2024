@@ -239,19 +239,25 @@ public class KmzTrackImporter {
      * @param fileName       the file name
      */
     private void readAndSaveImageFile(ZipInputStream zipInputStream, Track.Id trackId, String fileName) throws IOException {
-        if (trackId == null || "".equals(fileName)) {
+        if (trackId == null || fileName.isEmpty()) {
             return;
         }
         String sanitizedFileName = sanitizeFileName(fileName);
 
+        // Sanitize the file name to prevent directory traversal
+        String sanitizedFileName = sanitizeFileName(fileName);
+
+        // Get the photo directory for this track
         File dir = FileUtils.getPhotoDir(context, trackId);
         File file = new File(dir, sanitizedFileName);
 
-        String canonicalPath = file.getCanonicalPath();
-        if (!canonicalPath.startsWith(dir.getCanonicalPath())) {
-            throw new IOException("Attempted path traversal detected.");
+
+        // Ensure the file is within the intended directory (canonical path check)
+        if (!file.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
+            throw new IOException("Attempt to write outside the allowed directory.");
         }
 
+        // Proceed with file extraction and saving
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 zipInputStream.transferTo(fileOutputStream);
@@ -264,4 +270,24 @@ public class KmzTrackImporter {
             }
         }
     }
-}// end of the path traversal refactor.
+
+    /**
+     * Sanitizes fileName to avoid path traversal and ensures it's safe to use in the file system.
+     *
+     * @param fileName : Name of the file
+     * @return : Sanitized name
+     */
+    public static String sanitizeFileName(String fileName) {
+        if (fileName == null) return "";
+
+        // Normalize filename: Remove any traversal sequences and unsafe characters
+        String sanitizedFileName = fileName.replace("../", "")  // Remove any attempt to go up directories
+                .replace("..\\", "") // Windows style
+                .replace(File.separatorChar, '-'); // Normalize separators
+
+        // Optionally, check that the sanitized filename does not include any other risky characters:
+        sanitizedFileName = sanitizedFileName.replaceAll("[<>:\"/\\|?*]", "");  // Remove characters that are unsafe for filenames
+
+        return sanitizedFileName;
+    }
+}

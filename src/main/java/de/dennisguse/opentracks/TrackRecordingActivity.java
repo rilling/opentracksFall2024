@@ -1,6 +1,7 @@
 package de.dennisguse.opentracks;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Build;
@@ -115,7 +116,14 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
         super.onCreate(savedInstanceState);
         contentProviderUtils = new ContentProviderUtils(this);
 
-        trackId = getIntent().getParcelableExtra(EXTRA_TRACK_ID);
+        Intent intent = getIntent();
+        if (intent == null || !intent.hasExtra(EXTRA_TRACK_ID)) {
+            Log.e(TAG, "Intent or EXTRA_TRACK_ID is missing.");
+            finish();
+            return;
+        }
+
+        trackId = intent.getParcelableExtra(EXTRA_TRACK_ID);
         if (trackId == null) {
             throw new RuntimeException("TrackId is mandatory");
         }
@@ -152,6 +160,7 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
 
         setSupportActionBar(viewBinding.bottomAppBar);
     }
+
 
     @Override
     public void onAttachedToWindow() {
@@ -263,12 +272,6 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-   package de.dennisguse.opentracks;
-
-// Import statements (unchanged)
-
-// TrackRecordedActivity class definition (unchanged)
 
     // Helper method to handle menu actions (Refactored)
     private static boolean handleMenuActions(Context context, int itemId, Track.Id trackId) {
@@ -294,11 +297,7 @@ public class TrackRecordingActivity extends AbstractActivity implements ChooseAc
     // Inside onOptionsItemSelected in TrackRecordedActivity (Refactored)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (handleMenuActions(this, item.getItemId(), trackId)) {
-            return true;
-        }
-
-        // Rest of the onOptionsItemSelected code remains the same
+        return  handleMenuActions(this, item.getItemId(), trackId);
     }
 
     /**

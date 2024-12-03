@@ -38,7 +38,15 @@ public class TrackStoppedActivity extends AbstractTrackDeleteActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        trackId = getIntent().getParcelableExtra(EXTRA_TRACK_ID);
+        Intent intent = getIntent();
+        if (intent == null || !intent.hasExtra(EXTRA_TRACK_ID)) {
+            Log.e(TAG, "Invalid or missing EXTRA_TRACK_ID.");
+            finish();
+            return;
+        }
+
+        // Validate the track ID
+        trackId = intent.getParcelableExtra(EXTRA_TRACK_ID);
         if (trackId == null) {
             Log.e(TAG, "TrackStoppedActivity needs EXTRA_TRACK_ID.");
             finish();

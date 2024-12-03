@@ -152,8 +152,12 @@ public class StatisticsRecordingFragment extends Fragment {
                 columnIndex++;
             }
 
+            Callable<StatisticViewHolder<?>> callableViewHolder = m.get(dataField.getKey());
+            if (callableViewHolder == null) {
+                throw new RuntimeException("Missing view holder for key: " + dataField.getKey());
+            }
             try {
-                StatisticViewHolder<?> viewHolder = m.get(dataField.getKey()).call();
+                StatisticViewHolder<?> viewHolder = callableViewHolder.call();
                 viewHolder.initialize(getContext(), getLayoutInflater());
                 viewHolder.configureUI(dataField);
                 viewHolders.add(viewHolder);
