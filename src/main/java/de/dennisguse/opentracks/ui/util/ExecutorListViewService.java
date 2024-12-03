@@ -32,21 +32,27 @@ public class ExecutorListViewService<T> {
      * @param object   the Object.
      * @param runnable the Runnable.
      */
-    public void execute(T object, Runnable runnable) {
-        if (!preExecute(object)) {
-            return;
-        }
-
-        new Thread(() -> {
-            Future<?> future = executorService.submit(runnable);
-            try {
-                future.get();
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-            }
-            postExecute(object);
-        }).start();
+public void execute(T object, Runnable runnable) {
+    if (!preExecute(object)) {
+        return;
     }
+
+    new Thread(() -> {
+        Future<?> future = executorService.submit(runnable);
+        try {
+            future.get();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Execution exception in task: " + e.getCause(), e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Preserve interrupt status
+            throw new RuntimeException("Task was interrupted", e);
+        } finally {
+            postExecute(object);
+        }
+    }).start();
+}
+ 
+
 
     /**
      * Before execution it must checks if the object is already enqueued.
